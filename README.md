@@ -115,41 +115,41 @@ Presenter - презентер содержит основную логику п
 Описывает данные покупателя для оформления заказа.  
 
 Поля:  
-`payment: 'card' | 'cash' | ''` - Способ оплаты  
+`payment: Payment` - Способ оплаты  
 `address: string` - Адрес доставки  
 `email: string` - Электронная почта покупателя  
 `phone: string` - Телефон покупателя
 
 ### Модели данных
 
-#### класс Catalog  
+#### класс CatalogModel  
 Отвечает за хранение и загрузку списка товаров, а также хранение текущего выбранного товара.  
 
 Конструктор:  
-Класс не имеет конструктора. Поля инициализируются значением `null`  
+Класс не имеет конструктора. Поле `_products` инициализируется пустым массивом `[]`, Поле `_selectedProduct` значением `null`  
 
 Поля:  
-`products: Product[] | null` - Массив товаров для каталога  
-`selectedProduct: Product | null` - Текущий выбранный товар  
+`private _products: Product[]` - Массив товаров для каталога  
+`private _selectedProduct: Product | null` - Текущий выбранный товар  
 
 Методы:  
-`setProducts(products: Product[]): void` - Сохранить список товаров  
-`getProducts(): Products[] | null` - Получить список товаров  
-`setSelectedProduct(product: Product): void` - Сохранить текущий выбранный товар  
-`getSelectedProduct(): Product | null` - Получить текущий выбранный товар  
-`getProductById(id: string): Product` - Получить товар из списка товаров по ID.  
+`set products(products: Product[])` - Сохранить список товаров  
+`get products(): Products[]` - Получить список товаров  
+`set selectedProduct(id: string): void` - Сохранить текущий выбранный товар  
+`get selectedProduct(): Product | null` - Получить текущий выбранный товар  
+`getProductById(id: string): Product | null` - Получить товар из списка товаров по ID.  
 
-#### класс Cart  
+#### класс CartModel  
 Отвечает за управление товарами, которые пользователь выбрал для покупки. Позволяет хранить, добавлять, удалять и подсчитывать товары добавленные пользователем.  
 
 Конструктор:  
-Класс не имеет конструктора. Поле инициализируется значением `null`
+Класс не имеет конструктора. Поле инициализируется пустым массивом.
 
 Поля:  
-`products: Product[] | null` - Список товаров добавленных в корзину  
+`private products: Product[]` - Список товаров добавленных в корзину  
 
 Методы:  
-`getProducts(): Product[] | null` - Получить список добавленных товаров  
+`getProducts(): Product[]` - Получить список добавленных товаров  
 `addProduct(product: Product): void` - Добавить товар из параметра в список товаров  
 `deleteProduct(product: Product): void` - Удалить товар из параметра из списка товаров  
 `deleteAll(): void` - Удалить все товары из списка товаров  
@@ -157,20 +157,23 @@ Presenter - презентер содержит основную логику п
 `getProductCount(): number` - Получить количество товаров в списке  
 `isProductInCart(id: string): boolean` - Проверить наличие товара в списке, по его id  
 
-#### класс Customer  
+#### класс CustomerModel    
 Отвечает за хранение, управление и валидацию данными покупателя.  
 
 Конструктор:  
-Класс не имеет конструктора. Поля инициализируются значением `null`  
+Класс не имеет конструктора. Поля инициализируются пустыми значениями.  
 
 Поля:  
-`payment: Payment | null` - Способ оплаты  
-`address: 'string' | null` - Адрес доставки  
-`email: string | null` - Электронная почта  
-`phone: string | null` - Номер телефона  
+`private _payment: Payment | null` - Способ оплаты  
+`private _address: string` - Адрес доставки  
+`private _email: string` - Электронная почта  
+`private _phone: string` - Номер телефона  
 
 Методы:  
+`set payment(payment: Payment | null)` - Устанавливает способ оплаты  
+`set address(address: string)` - Устанавливает адрес покупателя  
+`set email(email: string)` - Устанавливает емэйл покупателя  
+`set phone(phone: string)` - Устанавливает телефон покупателя  
 `getCustomer(): Customer` - Получить данные покупателя  
-`clear(): void` - Очистить данные покупателя  
-`setCustomer(fields: {[field: string]: string | Payment}): void` - Сохранить переданные поля покупателя.  
-`validate(): {[field: string]: string} | {}` - Валидировать поля и вернуть объект с текстом ошибок, где ключ - поле, а значение - текст ошибки. Если ошибок нет, вернуть пустой объект.
+`clear(): void` - Очистить данные покупателя   
+`validate(): {[field: string]: string}` - Валидировать поля и вернуть объект с текстом ошибок, где ключ - поле, а значение - текст ошибки. Если ошибок нет, вернуть пустой объект.
