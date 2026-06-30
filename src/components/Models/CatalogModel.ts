@@ -1,29 +1,30 @@
 import { Product } from "../../types/index";
 
 export class CatalogModel {
-  private _products: Product[] = [];
-  private _selectedProduct: Product | null = null;
+
+  #products: Product[] = [];
+  #selectedProduct: Product | null = null;
 
   set products(products: Product[]) {
-    this._products = [...products];
+    this.#products = [...products];
   }
 
   get products(): Product[] {
-    return [...this._products];
+    return [...this.#products];
   }
 
   set selectedProduct(id: string) {
     const product = this.getProductById(id);
     if (product) {
-      this._selectedProduct = product;
+      this.#selectedProduct = product;
     }
   }
 
   get selectedProduct(): Product | null {
-    return this._selectedProduct;
+    return this.#selectedProduct;
   }
 
   getProductById(id: string): Product | null {
-    return this.products.find((product) => product.id === id) ?? null;
+    return this.#products.find((product) => product.id === id) ?? null;
   }
 }

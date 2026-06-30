@@ -1,39 +1,39 @@
 import { Product } from "../../types/index";
 
 export class CartModel {
-  private products: Product[] = [];
+  #products: Product[] = [];
 
   getProducts(): Product[] {
-    return [...this.products];
+    return [...this.#products];
   }
 
   isProductInCart(id: string): boolean {
-    return this.products.some((product) => product.id === id);
+    return this.#products.some((product) => product.id === id);
   }
 
   addProduct(product: Product): void {
     if (this.isProductInCart(product.id)) {
       return;
     }
-    this.products.push(product);
+    this.#products.push(product);
   }
 
   deleteProduct(product: Product): void {
-    this.products = this.products.filter((item) => item.id !== product.id);
+    this.#products = this.#products.filter((item) => item.id !== product.id);
   }
 
   deleteAll(): void {
-    this.products = [];
+    this.#products = [];
   }
 
   getTotalAmount(): number {
-    return this.products.reduce(
+    return this.#products.reduce(
       (total, product) => (product.price ?? 0) + total,
       0
     );
   }
 
   getProductCount(): number {
-    return this.products.length;
+    return this.#products.length;
   }
 }
