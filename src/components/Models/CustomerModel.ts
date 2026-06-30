@@ -1,4 +1,4 @@
-import { Customer, Payment } from "../../types/index";
+import { Customer, CustomerErrors, Payment } from "../../types/index";
 
 export class CustomerModel {
   private _payment: Payment | null = null;
@@ -11,15 +11,15 @@ export class CustomerModel {
   }
 
   set address(address: string) {
-    this._address = address.trim();
+    this._address = address;
   }
 
   set email(email: string) {
-    this._email = email.trim();
+    this._email = email;
   }
 
   set phone(phone: string) {
-    this._phone = phone.trim();
+    this._phone = phone;
   }
 
   getCustomer(): Customer {
@@ -38,22 +38,22 @@ export class CustomerModel {
     this._phone = "";
   }
 
-  validate(): { [field: string]: string } {
-    const errors: { [field: string]: string } = {};
+  validate(): CustomerErrors {
+    const errors: CustomerErrors = {};
 
     if (this._payment === null) {
       errors.payment = "Не выбран вид оплаты";
     }
 
-    if (!this._address) {
+    if (!this._address.trim()) {
       errors.address = "Укажите адрес";
     }
 
-    if (!this._email) {
-      errors.email = "Укажите емэйл";
+    if (!this._email.trim()) {
+      errors.email = "Укажите электронную почту";
     }
 
-    if (!this._phone) {
+    if (!this._phone.trim()) {
       errors.phone = "Укажите телефон";
     }
 

@@ -9,7 +9,7 @@ export interface IApi {
   ): Promise<T>;
 }
 
-export type Payment = "cash" | "card" | "online";
+export type Payment = "cash" | "online";
 
 export interface Product {
   id: string;
@@ -27,6 +27,8 @@ export interface Customer {
   phone: string;
 }
 
+export type CustomerErrors = Partial<Record<keyof Customer, string>>;
+
 export interface OrderRequest extends Customer {
   payment: Payment;
   total: number;
@@ -41,5 +43,4 @@ export interface ProductsResponse {
 export interface OrderResponse {
   id: string;
   total: number;
-  error?: string;
 }

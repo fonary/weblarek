@@ -1,15 +1,15 @@
 import "./scss/styles.scss";
-import { CatalogModel } from "./components/models/CatalogModel";
-import { CartModel } from "./components/models/CartModel";
-import { CustomerModel } from "./components/models/CustomerModel";
+import { CatalogModel } from "./components/Models/CatalogModel";
+import { CartModel } from "./components/Models/CartModel";
+import { CustomerModel } from "./components/Models/CustomerModel";
 import { apiProducts } from "./utils/data";
 import { Product } from "./types";
 import { Api } from "./components/base/Api";
-import { ClientApi } from "./components/base/ClientApi";
+import { ClientApi } from "./components/communication/ClientApi";
 import { API_URL } from "./utils/constants";
 
 const data = apiProducts;
-console.log("Данные с сервера - ", data);
+console.log("Локальные тестовые данные - ", data);
 
 const catalog = new CatalogModel();
 console.log("Созданный новый каталог - ", catalog);
@@ -66,13 +66,13 @@ console.log("Удалили все товары из корзины - ", cart.ge
 const customer = new CustomerModel();
 console.log("-".repeat(25), "\nСоздан покупатель - ", customer.getCustomer());
 console.log("Валидация полей - ", customer.validate());
-customer.payment = "card";
+customer.payment = "online";
 console.log("Добавлен способ оплаты - ", customer.getCustomer());
 console.log("Валидация полей - ", customer.validate());
 customer.payment = null;
 console.log("Способ оплаты сброшен - ", customer.getCustomer());
 console.log("Валидация полей - ", customer.validate());
-customer.payment = "card";
+customer.payment = "online";
 customer.phone = "+79999999999";
 console.log("Добавлен способ оплаты и телефон - ", customer.getCustomer());
 console.log("Валидация полей - ", customer.validate());
@@ -89,6 +89,10 @@ console.log("Валидация полей - ", customer.validate());
 const api = new Api(API_URL);
 const clientApi = new ClientApi(api);
 
-const products: Product[] = await clientApi.getProducts();
-catalog.products = products;
-console.log(catalog.products);
+try {
+  const products: Product[] = await clientApi.getProducts();
+  catalog.products = products;
+  console.log(catalog.products);
+} catch (error) {
+  console.error("Не удалось загрузить данные с сервера из-за ошибки: ", error);
+}
