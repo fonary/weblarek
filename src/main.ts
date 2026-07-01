@@ -3,7 +3,7 @@ import { CatalogModel } from "./components/Models/CatalogModel";
 import { CartModel } from "./components/Models/CartModel";
 import { CustomerModel } from "./components/Models/CustomerModel";
 import { apiProducts } from "./utils/data";
-import { Product } from "./types";
+import { Product, ProductsResponse } from "./types";
 import { Api } from "./components/base/Api";
 import { ClientApi } from "./components/communication/ClientApi";
 import { API_URL } from "./utils/constants";
@@ -90,7 +90,8 @@ const api = new Api(API_URL);
 const clientApi = new ClientApi(api);
 
 try {
-  const products: Product[] = await clientApi.getProducts();
+  const productsResponse: ProductsResponse = await clientApi.getProducts();
+  const products: Product[] = productsResponse.items;
   catalog.products = products;
   console.log(catalog.products);
 } catch (error) {
