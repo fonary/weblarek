@@ -99,6 +99,8 @@ Presenter - презентер содержит основную логику п
 `emit<T extends object>(event: string, data?: T): void` - инициализация события. При вызове события в метод передается название события и объект с данными, который будет использован как аргумент для вызова обработчика.  
 `trigger<T extends object>(event: string, context?: Partial<T>): (data: T) => void` - возвращает функцию, при вызове которой инициализируется требуемое в параметрах событие с передачей в него данных из второго параметра.
 
+---
+
 ### Данные
 
 #### Интерфейс Product
@@ -112,6 +114,8 @@ Presenter - презентер содержит основную логику п
 `price: number | null` - Цена товара  
 `description: string` - Описание товара  
 
+---
+
 #### Интерфейс Customer  
 Описывает данные покупателя для оформления заказа.  
 
@@ -120,6 +124,8 @@ Presenter - презентер содержит основную логику п
 `address: string` - Адрес доставки  
 `email: string` - Электронная почта покупателя  
 `phone: string` - Телефон покупателя
+
+---
 
 ### Модели данных
 
@@ -140,6 +146,8 @@ Presenter - презентер содержит основную логику п
 `get selectedProduct(): Product | null` - Получить текущий выбранный товар  
 `getProductById(id: string): Product | null` - Получить товар из списка товаров по ID.  
 
+---
+
 #### класс CartModel  
 Отвечает за управление товарами, которые пользователь выбрал для покупки. Позволяет хранить, добавлять, удалять и подсчитывать товары добавленные пользователем.  
 
@@ -157,6 +165,8 @@ Presenter - презентер содержит основную логику п
 `getTotalAmount(): number` - Получить общую стоимость товаров в списке  
 `getProductCount(): number` - Получить количество товаров в списке  
 `isProductInCart(id: string): boolean` - Проверить наличие товара в списке, по его id  
+
+---
 
 #### класс CustomerModel    
 Отвечает за хранение, управление и валидацию данными покупателя.  
@@ -179,6 +189,8 @@ Presenter - презентер содержит основную логику п
 `clear(): void` - Очистить данные покупателя   
 `validate(): {[field: string]: string}` - Валидировать поля и вернуть объект с текстом ошибок, где ключ - поле, а значение - текст ошибки. Если ошибок нет, вернуть пустой объект.  
 
+---
+
 ### Слой коммуникации  
 
 #### класс ClientApi  
@@ -195,3 +207,346 @@ Presenter - презентер содержит основную логику п
 Методы класса:  
 `getProducts(): Promise<Product[]>` - делает get запрос на эндпоинт /product/ и возвращает объект, полученный от сервера, в котором находится массив товаров.  
 `placeOrder(order: OrderRequest): Promise<OrderResponse>` - делает post запрос на эндпоинт /order/ и передаёт в него данные, полученные в параметрах метода, а возвращает объект, подтверждающий покупку на определенную сумму.
+
+---
+
+### View компоненты  
+
+#### Интерфейсы  
+
+#### Интерфейс HeaderData  
+Описывает данные для компонента `HeaderView`.  
+
+Поля:  
+`counter: number` - количество товаров в корзине.  
+
+---
+
+#### Интерфейс GalleryData  
+Описывает данные для компонента `Gallery`.  
+
+Поля:  
+`catalog: HTMLElement[]` - массив DOM-элементов карточек товаров для отображения.  
+
+---
+
+#### Интерфейс ModalData  
+Описывает данные для компонента `Modal`.  
+
+Поля:  
+`content: HTMLElement` - DOM-элемент, который будет отображён внутри модального окна.  
+
+---
+
+#### Интерфейс SuccessData  
+Описывает данные для компонента `OrderSuccessView`.  
+
+Поля:  
+`amount: number` - DOM-элемент, который будет отображён внутри модального окна.  
+
+---
+
+#### Интерфейс BasketData  
+Описывает данные для компонента `Basket`.  
+
+Поля:  
+`purchases: HTMLElement[]` - массив DOM-элементов товаров в корзине  
+`totalCost: number` - общая стоимость корзины.  
+
+---
+
+#### Интерфейс CardData  
+Описывает общие данные карточек.  
+
+Поля:  
+`title: string` - Название товара  
+`price: number | null` - Цена товара
+
+---
+
+#### Интерфейс CardCatalogData  
+Расширяет интерфейс `CardData`.  
+Описывает данные для карточек в каталоге.  
+
+Поля:  
+`title: string` - Название товара, унаследовано от `CardData`  
+`price: number` - Цена товара, унаследовано от `CardData`  
+`category: string` - Категория товара  
+`image: { src: string; alt?: string }` - Данные изображения
+
+---
+
+#### Интерфейс CardPreviewData  
+Расширяет интерфейс `CardData`.  
+Описывает данные для карточки в модальном окне предпросмотра.  
+
+Поля:  
+`title: string` - Название товара, унаследовано от `CardData`  
+`price: number` - Цена товара, унаследовано от `CardData`     
+`category: string` - Категория товара  
+`image: { src: string; alt?: string }`  
+`description?: string` - Описание товара  
+
+---
+
+#### Интерфейс CardBasketData
+Расширяет интерфейс `CardData`.  
+Описывает данные для карточки в корзине.  
+
+Поля:  
+`title: string` - Название товара, унаследовано от `CardData`  
+`price: number` - Цена товара, унаследовано от `CardData`  
+`index: number` - Порядковый номер товара в корзине
+
+---
+
+#### Тип OrderFormData  
+Тип для данных формы заказа, использует интерфейс Customer: `type OrderFormData = Pick<Customer, 'payment' | 'address'>`.  
+
+Содержит поля:  
+`payment: Payment | null` - способ оплаты («cash» или «online»)  
+`address: string` - адрес доставки   
+
+---
+
+
+#### Тип ContactsFormData  
+Тип для данных формы контактов, использует интерфейс Customer: `type ContactsFormData = Pick<Customer, 'email' | 'phone'>`.  
+
+Содержит поля:  
+`email: string` - email пользователя  
+`phone: string` - телефон пользователя  
+
+---
+
+
+#### Класс Component  
+Абстрактный базовым классом для всех компонентов интерфейса.
+Класс является дженериком и принимает в переменной `T` тип данных, которые могут быть переданы в метод `render` для отображения.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент, отображением которого управляет компонент.  
+
+Поля класса:  
+`container: HTMLElement` - поле для хранения корневого DOM-элемента компонента.  
+
+Методы класса:  
+`render(data?: Partial<T>): HTMLElement` - Главный метод класса. Принимает данные , которые записывает в поля экземпляра. Возвращает ссылку на корневой DOM-элемент.  
+`setImage(element: HTMLImageElement, src: string, alt?: string): void` - Метод для модификации DOM-элемента `<img>`. Устанавливает атрибут `src` и опционально `alt` для указанного изображения.  
+
+---
+
+#### Класс HeaderView  
+Класс для отображения и управления элементами шапки приложения.  
+Является дочерним классом `Component<HeaderData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент шапки.  
+
+Поля класса:  
+`basketButton: HTMLButtonElement` - кнопка открытия корзины  
+`counterBasket: HTMLElement` - элемент отображения количества товаров в корзине.  
+
+Сеттеры:  
+`set counter(value: number): void` - устанавливает количество товаров в корзине в элемент `counterBasket`.  
+
+---
+
+#### Класс GalleryView  
+Класс для отображения списка товаров в каталоге.  
+Является дочерним классом `Component<GalleryData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент контейнера каталога.  
+
+Поля класса:  
+`catalogElement: HTMLElement` - контейнер для размещения карточек товаров  
+
+Сеттеры:  
+`set catalog(items: HTMLElement[]): void` - принимает массив DOM-элементов карточек и добавляет их в `catalogElement`.  
+
+---
+
+#### Класс ModalView  
+Класс для отображения и управления модального окна.  
+Является дочерним классом `Component<ModalData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент модального окна.  
+
+Поля класса:  
+`closeButton: HTMLButtonElement` - кнопка закрытия модального окна  
+`content: HTMLElement` - контейнер для встраиваемого контента  
+
+Сеттеры:  
+`set content(component: HTMLElement): void` - устанавливает переданный DOM-элемент как содержимое модального окна.  
+
+---
+
+#### Класс OrderSuccessView  
+Класс для отображения успешного оформления заказа.  
+Является дочерним классом `Component<SuccessData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент контейнера success-сообщения  
+
+Поля класса:  
+`closeButton: HTMLButtonElement` - кнопка закрытия окна  
+`infoDebit: HTMLElement` - элемент отображения информации о списании
+
+Сеттеры:  
+`set chargeAmount(amount: number): void` - устанавливает сумму списания в элемент `infoDebit`  
+
+---
+
+#### Класс BasketView  
+Класс для отображения содержимого корзины.  
+Является дочерним классом `Component<BasketData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент контейнера корзины.
+
+Поля класса:  
+`completeButton: HTMLButtonElement` - кнопка оформления заказа  
+`shoppingList: HTMLElement[]` - массив DOM-элементов, представляющих товары в корзине  
+`totalCostEl: HTMLElement` - элемент отображения общей стоимости корзины  
+
+Геттеры и сеттеры:  
+`set purchases(items: HTMLElement[]): void` - принимает массив DOM-элементов товаров и добавляет их в `shoppingList` (в `ul.basket__list`).  
+`set totalCost(value: number): void` - устанавливает общую стоимость корзины в элемент `totalCostEl`.  
+
+---
+
+#### Класс Card  
+Абстрактный базовый класс для компонентов карточек. Наследуется от `Component<CardData>`, где `CardData` — базовый тип данных.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент-обёртку карточки.  
+
+Поля класса:  
+`cardButton: HTMLButtonElement` - кнопка, связанная с карточкой 
+`titleEl: HTMLElement` - элемент DOM для отображения названия товара  
+`priceEl: HTMLElement` - элемент DOM для отображения цены товара  
+
+---
+
+
+#### Класс CardCatalog  
+Реализует компонент карточки товара для каталога.  
+Наследуется от `Card<CardCatalogData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент карточки в каталоге.  
+
+Поля класса:  
+`cardButton: HTMLButtonElement` - кнопка добавления товара в корзину  
+`titleEl: HTMLElement` - элемент DOM для отображения названия товара  
+`priceEl: HTMLElement` - элемент DOM для отображения цены товара  
+`categoryEl: HTMLElement` - элемент DOM для отображения категории товара (например, «софт-скил»)  
+`imageEl: HTMLImageElement` - элемент `<img>` для отображения изображения товара  
+
+Сеттеры:  
+`set title(title: string): void` - устанавливает название товара в `titleEl`  
+`set price(price: number): void` - устанавливает цену товара в `priceEl`  
+`set category(category: string): void` - устанавливает текст категории в `categoryEl`  
+`set image(src: string, alt?: string): void` - устанавливает атрибуты `src` и `alt` у элемента `imageEl`  
+
+---
+
+
+#### Класс CardPreview  
+Реализует компонент карточки товара для модального окна предпросмотра.  
+Наследуется от `Card<CardPreviewData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент карточки в модальном окне.  
+
+Поля класса:  
+`cardButton: HTMLButtonElement` - кнопка добавления товара в корзину  
+`titleEl: HTMLElement` - элемент DOM для отображения названия товара  
+`priceEl: HTMLElement` - элемент DOM для отображения цены товара  
+`categoryEl: HTMLElement` - элемент DOM для отображения категории товара  
+`imageEl: HTMLImageElement` - элемент `<img>` для отображения изображения товара  
+`descriptionEl: HTMLElement` - элемент DOM для отображения описания товара (например, `<p class="card__text">`)  
+
+Сеттеры:  
+`set title(title: string): void` - устанавливает название товара в `titleEl`  
+`set price(price: number): void` - устанавливает цену товара в `priceEl`  
+`set category(category: string): void` - устанавливает текст категории в `categoryEl`  
+`set image(src: string, alt?: string): void` - устанавливает атрибуты `src` и `alt` у элемента `imageEl`  
+`set description(text: string): void` - устанавливает текст описания в `descriptionEl`  
+
+---
+
+
+#### Класс CardBasket  
+Реализует компонент карточки товара в корзине.  
+Наследуется от `Card<CardBasketData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент карточки в корзине.  
+
+Поля класса:  
+`cardButton: HTMLButtonElement` - кнопка удаления товара из корзины  
+`titleEl: HTMLElement` - элемент DOM для отображения названия товара  
+`priceEl: HTMLElement` - элемент DOM для отображения цены товара  
+`indexEl: HTMLElement` - элемент DOM для отображения порядкового номера товара в корзине  
+
+Сеттеры:  
+`set title(title: string): void` - устанавливает название товара в `titleEl`  
+`set price(price: number): void` - устанавливает цену товара в `priceEl`  
+`set index(value: number): void` - устанавливает порядковый номер в `indexEl`  
+
+---
+
+#### Класс Form  
+Абстрактный базовый класс для всех компонентов форм.  
+Является дженериком и принимает в параметре `T` тип данных для формы.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент формы. Инициализирует `submitButton` и `errorsContainer`.  
+
+Поля класса:  
+`submitButton: HTMLButtonElement` - кнопка отправки формы  
+`errorsContainer: HTMLElement` - элемент для отображения ошибок валидации  
+
+Сеттеры:  
+`set errors(errors: CustomerErrors): void` - отображает объект ошибок в `errorsContainer`  
+
+---
+
+
+#### Класс OrderForm  
+Класс для отображения и управления формой оформления заказа (выбор способа оплаты и адреса доставки).  
+Наследуется от `Form<OrderFormData>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент формы.  
+
+Поля класса:  
+`paymentCardButton: HTMLButtonElement` - кнопка выбора способа оплаты.  
+`paymentCashButton: HTMLButtonElement` - кнопка выбора способа оплаты.  
+`addressInput: HTMLInputElement` - поле ввода адреса доставки.    
+
+Сеттеры:  
+`set address(value: string): void` - устанавливает значение адреса доставки  
+
+---
+
+#### Класс ContactsForm  
+Класс для отображения и управления формой ввода контактных данных (Email и телефон).  
+Наследуется от `Form<ContactsFormData>`, где `ContactsFormData = Pick<Customer, 'email' | 'phone'>`.  
+
+Конструктор:  
+`constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент формы (например, из `<template id="contacts">`).  
+
+Поля класса:  
+`emailInput: HTMLInputElement` - поле ввода email  
+`phoneInput: HTMLInputElement` - поле ввода телефона  
+
+Сеттеры:  
+`set email(value: string | undefined): void` - устанавливает значение email  
+`set phone(value: string | undefined): void` - устанавливает значение телефона  
+
+
+---
