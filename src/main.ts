@@ -6,15 +6,16 @@ import { apiProducts } from "./utils/data";
 import { Product, ProductsResponse } from "./types";
 import { Api } from "./components/base/Api";
 import { ClientApi } from "./components/communication/ClientApi";
-import { API_URL } from "./utils/constants";
-import { ensureElement } from "./utils/utils";
+import { API_URL, CDN_URL } from './utils/constants';
+import { cloneTemplate, ensureElement } from "./utils/utils";
 import { HeaderView } from "./components/views/HeaderView";
 import { Component } from "./components/base/Component";
+import { CardCatalogView } from "./components/views/CardView";
 
 // const data = apiProducts;
 // console.log("Локальные тестовые данные - ", data);
 
-// const catalog = new CatalogModel();
+const catalog = new CatalogModel();
 // console.log("Созданный новый каталог - ", catalog);
 // catalog.products = data.items;
 // const catalogCopy: Product[] = catalog.products;
@@ -89,20 +90,33 @@ import { Component } from "./components/base/Component";
 // console.log("Очищены все поля методом clear() - ", customer.getCustomer());
 // console.log("Валидация полей - ", customer.validate());
 
-// const api = new Api(API_URL);
-// const clientApi = new ClientApi(api);
+const api = new Api(API_URL);
+const clientApi = new ClientApi(api);
 
-// try {
-//   const productsResponse: ProductsResponse = await clientApi.getProducts();
-//   const products: Product[] = productsResponse.items;
-//   catalog.products = products;
-//   console.log(catalog.products);
-// } catch (error) {
-//   console.error("Не удалось загрузить данные с сервера из-за ошибки: ", error);
-// }
+try {
+  const productsResponse: ProductsResponse = await clientApi.getProducts();
+  const products: Product[] = productsResponse.items;
+  catalog.products = products;
+  console.log(catalog.products);
+} catch (error) {
+  console.error("Не удалось загрузить данные с сервера из-за ошибки: ", error);
+}
 
-const gallery = ensureElement<HTMLElement>(".gallery")
-console.log(gallery)
+const gallery = ensureElement<HTMLElement>(".gallery");
 const component = new HeaderView(ensureElement('.header'));
-console.log(component)
-gallery.replaceChildren(component.render({counter: 100}))
+gallery.replaceChildren(component.render({counter: 10}))
+
+
+catalog.products.forEach((product) => {
+  console.log(product)
+  const cardContainer = cloneTemplate<HTMLElement>("#card-catalog");
+  const card = new CardCatalogView(cardContainer);
+
+  card.render({
+    title: product.title,
+    price: product.price,
+    category: product.category,
+    image: CDN_URL + product.image
+  })
+  gallery.appendChild(cardContainer);
+});
