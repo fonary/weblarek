@@ -104,7 +104,8 @@ try {
 
 const gallery = ensureElement<HTMLElement>(".gallery");
 const component = new HeaderView(ensureElement('.header'));
-gallery.replaceChildren(component.render({counter: 10}))
+console.log(component)
+gallery.replaceChildren(component.render({counter: 5}))
 
 
 catalog.products.forEach((product) => {
@@ -120,3 +121,4 @@ catalog.products.forEach((product) => {
   })
   gallery.appendChild(cardContainer);
 });
+
