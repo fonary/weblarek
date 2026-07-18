@@ -34,9 +34,9 @@ abstract class CardView<T> extends Component<T> {
 export class CardCatalogView<
   T extends CardCatalogData | CardPreviewData,
 > extends CardView<T> {
-  categoryEl: HTMLElement;
-  cardImage: HTMLImageElement;
-  cardButton: HTMLButtonElement;
+  protected categoryEl: HTMLElement;
+  protected cardImage: HTMLImageElement;
+  protected cardButton: HTMLButtonElement;
 
   constructor(container: HTMLElement) {
     super(container);
@@ -69,7 +69,7 @@ export class CardCatalogView<
 }
 
 export class CardPreview extends CardCatalogView<CardPreviewData> {
-  descriptionEl: HTMLElement;
+  private descriptionEl: HTMLElement;
 
   constructor(container: HTMLElement) {
     super(container);
@@ -90,15 +90,15 @@ export class CardPreview extends CardCatalogView<CardPreviewData> {
 }
 
 export class CardBasketView extends CardView<CardBasketData> {
-  titleEl: HTMLElement;
-  priceEl: HTMLElement;
-  indexEl: HTMLElement;
+  // titleEl: HTMLElement;
+  // priceEl: HTMLElement;
+  private indexEl: HTMLElement;
   cardButton: HTMLButtonElement;
 
   constructor(container: HTMLElement) {
     super(container);
-    this.titleEl = ensureElement<HTMLElement>(".card__title", this.container);
-    this.priceEl = ensureElement<HTMLElement>(".card__price", this.container);
+    // this.titleEl = ensureElement<HTMLElement>(".card__title", this.container);
+    // this.priceEl = ensureElement<HTMLElement>(".card__price", this.container);
     this.indexEl = ensureElement<HTMLElement>(
       ".basket__item-index",
       this.container,

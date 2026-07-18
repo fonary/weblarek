@@ -10,7 +10,7 @@ import { API_URL, CDN_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from "./utils/utils";
 import { HeaderView } from "./components/views/HeaderView";
 import { Component } from "./components/base/Component";
-import { CardCatalogView } from "./components/views/CardView";
+import { CardBasketView, CardCatalogView } from "./components/views/CardView";
 import { GalleryView } from "./components/views/GalleryView";
 
 // const data = apiProducts;
@@ -125,3 +125,13 @@ catalog.products.forEach((product) => {
   cardList.push(cardContainer);
 });
 catalogView.render({catalog: cardList});
+
+
+const cardBasket = new CardBasketView(cloneTemplate("#card-basket"))
+
+console.log(cardBasket)
+cardBasket.render({
+  title: "akrhgiq",
+  price: 123,
+  index: 3
+})

@@ -6,8 +6,8 @@ interface HeaderData {
 }
 
 export class HeaderView extends Component<HeaderData> {
-  protected basketButton: HTMLButtonElement;
-  protected counterEl: HTMLElement;
+  private basketButton: HTMLButtonElement;
+  private counterEl: HTMLElement;
 
   constructor(container: HTMLElement) {
     super(container);
