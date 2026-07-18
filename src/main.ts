@@ -11,6 +11,7 @@ import { cloneTemplate, ensureElement } from "./utils/utils";
 import { HeaderView } from "./components/views/HeaderView";
 import { Component } from "./components/base/Component";
 import { CardCatalogView } from "./components/views/CardView";
+import { GalleryView } from "./components/views/GalleryView";
 
 // const data = apiProducts;
 // console.log("Локальные тестовые данные - ", data);
@@ -106,10 +107,12 @@ const gallery = ensureElement<HTMLElement>(".gallery");
 const component = new HeaderView(ensureElement('.header'));
 console.log(component)
 gallery.replaceChildren(component.render({counter: 5}))
+const catalogView = new GalleryView(ensureElement('.page__wrapper'))
+console.log(catalogView);
 
+const cardList: HTMLElement[] = []; 
 
 catalog.products.forEach((product) => {
-  console.log(product)
   const cardContainer = cloneTemplate<HTMLElement>("#card-catalog");
   const card = new CardCatalogView(cardContainer);
 
@@ -119,6 +122,6 @@ catalog.products.forEach((product) => {
     category: product.category,
     image: CDN_URL + product.image
   })
-  gallery.appendChild(cardContainer);
+  cardList.push(cardContainer);
 });
-
+catalogView.render({catalog: cardList});
