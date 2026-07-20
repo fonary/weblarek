@@ -2,18 +2,22 @@ import { Product } from "../../types";
 import { categoryMap } from "../../utils/constants";
 import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
+import { IEvents } from "../base/Events";
 
 type CardCatalogData = Pick<Product, "title" | "price" | "category" | "image">;
 type CardPreviewData = Omit<Product, "id">;
 type CardBasketData = Pick<Product, "title" | "price"> & { index: number };
 
 abstract class CardView<T> extends Component<T> {
-  protected  titleEl: HTMLElement;
-  protected  priceEl: HTMLElement;
+  protected titleEl: HTMLElement;
+  protected priceEl: HTMLElement;
   protected abstract cardButton: HTMLButtonElement;
 
-  constructor(container: HTMLElement) {
-    super(container)
+  constructor(
+    container: HTMLElement,
+    protected events?: IEvents,
+  ) {
+    super(container);
     this.titleEl = ensureElement<HTMLElement>(".card__title", this.container);
     this.priceEl = ensureElement<HTMLElement>(".card__price", this.container);
   }
@@ -38,8 +42,8 @@ export class CardCatalogView<
   protected cardImage: HTMLImageElement;
   protected cardButton: HTMLButtonElement;
 
-  constructor(container: HTMLElement) {
-    super(container);
+  constructor(container: HTMLElement, events?: IEvents) {
+    super(container, events);
 
     this.categoryEl = ensureElement<HTMLElement>(
       ".card__category",
@@ -50,6 +54,10 @@ export class CardCatalogView<
       this.container,
     );
     this.cardButton = this.container as HTMLButtonElement;
+
+    this.cardButton.addEventListener("click", () => {
+      this.events?.emit("card:select", { id: this.container.dataset.id });
+    });
   }
 
   set category(name: string) {
@@ -82,6 +90,10 @@ export class CardPreview extends CardCatalogView<CardPreviewData> {
       ".card__button",
       this.container,
     );
+
+    this.cardButton.addEventListener("click", () => {
+      this.events?.emit("card:order");
+    });
   }
 
   set description(text: string) {
@@ -99,7 +111,14 @@ export class CardBasketView extends CardView<CardBasketData> {
       ".basket__item-index",
       this.container,
     );
-    this.cardButton = this.container as HTMLButtonElement;
+    this.cardButton = ensureElement<HTMLButtonElement>(
+      ".basket__item-delete",
+      this.container,
+    );
+
+    this.cardButton.addEventListener("click", () => {
+      this.events?.emit("basket:delete", { id: this.container.dataset.id });
+    });
   }
 
   set index(value: number) {
