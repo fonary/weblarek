@@ -1,4 +1,5 @@
 import { Customer, CustomerErrors, Payment } from "../../types/index";
+import { IEvents } from "../base/Events";
 
 export class CustomerModel {
   #payment: Payment | null = null;
@@ -6,20 +7,26 @@ export class CustomerModel {
   #email: string = "";
   #phone: string = "";
 
+  constructor(protected events: IEvents) {}
+
   set payment(payment: Payment | null) {
     this.#payment = payment;
+    this.events.emit("order:changed", this.validate());    
   }
 
   set address(address: string) {
     this.#address = address;
+    this.events.emit("order:changed", this.validate());
   }
 
   set email(email: string) {
     this.#email = email;
+    this.events.emit("order:changed", this.validate());
   }
 
   set phone(phone: string) {
     this.#phone = phone;
+    this.events.emit("order:changed", this.validate());
   }
 
   getCustomer(): Customer {
@@ -36,6 +43,7 @@ export class CustomerModel {
     this.#address = "";
     this.#email = "";
     this.#phone = "";
+    this.events.emit("order:changed", this.validate());
   }
 
   validate(): CustomerErrors {
