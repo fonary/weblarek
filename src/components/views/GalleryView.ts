@@ -14,7 +14,7 @@ export class GalleryView extends Component<GalleryData>{
   }
 
   set catalog(items: HTMLElement[]){
-    this.catalogEl.append(...items);
+    this.catalogEl.replaceChildren(...items);
   }
 
 }

@@ -90,15 +90,11 @@ export class CardPreview extends CardCatalogView<CardPreviewData> {
 }
 
 export class CardBasketView extends CardView<CardBasketData> {
-  // titleEl: HTMLElement;
-  // priceEl: HTMLElement;
   private indexEl: HTMLElement;
   cardButton: HTMLButtonElement;
 
   constructor(container: HTMLElement) {
     super(container);
-    // this.titleEl = ensureElement<HTMLElement>(".card__title", this.container);
-    // this.priceEl = ensureElement<HTMLElement>(".card__price", this.container);
     this.indexEl = ensureElement<HTMLElement>(
       ".basket__item-index",
       this.container,

@@ -20,7 +20,7 @@ export class BasketView extends Component<BasketViewData> {
   }
 
   set purchases(purchases: HTMLElement[]) {
-    this.shoppingListEl.append(...purchases)
+    this.shoppingListEl.replaceChildren(...purchases)
   }
 
   set totalCost(value: number) {
