@@ -4,14 +4,19 @@ import { ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
 
-type CardCatalogData = Pick<Product, "title" | "price" | "category" | "image">;
-type CardPreviewData = Omit<Product, "id">;
-type CardBasketData = Pick<Product, "title" | "price"> & { index: number };
+type CardCatalogData = Pick<
+  Product,
+  "id" | "title" | "price" | "category" | "image"
+>;
+type CardPreviewData = Product;
+type CardBasketData = Pick<Product, "id" | "title" | "price"> & {
+  index: number;
+};
 
 abstract class CardView<T> extends Component<T> {
   protected titleEl: HTMLElement;
   protected priceEl: HTMLElement;
-  protected abstract cardButton: HTMLButtonElement;
+  abstract cardButton: HTMLButtonElement;
 
   constructor(
     container: HTMLElement,
@@ -33,6 +38,10 @@ abstract class CardView<T> extends Component<T> {
   set title(title: string) {
     this.titleEl.textContent = title;
   }
+
+  set id(value: string) {
+    this.container.dataset.id = value;
+  }
 }
 
 export class CardCatalogView<
@@ -40,9 +49,12 @@ export class CardCatalogView<
 > extends CardView<T> {
   protected categoryEl: HTMLElement;
   protected cardImage: HTMLImageElement;
-  protected cardButton: HTMLButtonElement;
+  cardButton: HTMLButtonElement;
 
-  constructor(container: HTMLElement, events?: IEvents) {
+  constructor(
+    container: HTMLElement,
+    protected events?: IEvents,
+  ) {
     super(container, events);
 
     this.categoryEl = ensureElement<HTMLElement>(
@@ -79,8 +91,11 @@ export class CardCatalogView<
 export class CardPreview extends CardCatalogView<CardPreviewData> {
   private descriptionEl: HTMLElement;
 
-  constructor(container: HTMLElement) {
-    super(container);
+  constructor(
+    container: HTMLElement,
+    protected events?: IEvents,
+  ) {
+    super(container, events);
     this.descriptionEl = ensureElement<HTMLElement>(
       ".card__text",
       this.container,

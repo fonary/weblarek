@@ -2,15 +2,14 @@ import "./scss/styles.scss";
 import { CatalogModel } from "./components/Models/CatalogModel";
 import { CartModel } from "./components/Models/CartModel";
 import { CustomerModel } from "./components/Models/CustomerModel";
-import { apiProducts } from "./utils/data";
 import { Product, ProductsResponse } from "./types";
 import { Api } from "./components/base/Api";
 import { ClientApi } from "./components/communication/ClientApi";
 import { API_URL, CDN_URL } from './utils/constants';
 import { cloneTemplate, ensureElement } from "./utils/utils";
 import { HeaderView } from "./components/views/HeaderView";
-import { Component } from "./components/base/Component";
-import { CardBasketView, CardCatalogView } from "./components/views/CardView";
+import { CardBasketView, CardCatalogView, CardPreview } from "./components/views/CardView";
+import {ModalView} from "./components/views/ModalView";
 import { GalleryView } from "./components/views/GalleryView";
 import { EventEmitter } from "./components/base/Events";
 
@@ -28,32 +27,71 @@ const customerModel = new CustomerModel(events);
 // Представления
 const header = new HeaderView(ensureElement<HTMLElement>(".header"), events);
 const gallery = new GalleryView(ensureElement<HTMLElement>(".page__wrapper"));
+const cardPreview = new CardPreview(cloneTemplate<HTMLElement>("#card-preview"), events);
+const modal = new ModalView(ensureElement<HTMLElement>("#modal-container"), events);
 
-// Обработка событий
+// ===== Обработка событий =====
 
 // Обработка события: каталог товаров изменился
 events.on<{ products: Product[] }>("items:changed", ({ products }) => {
-  // Для каждого товара создаём карточку
   const cardList: HTMLElement[] = products.map((product) => {
     const cardContainer = cloneTemplate<HTMLElement>("#card-catalog");
     const card = new CardCatalogView(cardContainer, events);
-    
-    // Рендер карточки с данными
+
+    // Рендер карточки с данными (включая id для dataset)
     card.render({
+      id: product.id,
       title: product.title,
       price: product.price,
       category: product.category,
       image: CDN_URL + product.image,
     });
-    
+
     return cardContainer;
   });
-  
 
   gallery.render({ catalog: cardList });
 });
 
-//Инициализация приложения
+// Обработка события от представления: клик по карточке в каталоге
+events.on<{ id: string }>("card:select", ({ id }) => {
+  // Сохраняем выбранный товар в модели
+  catalogModel.selectedProduct = id;
+});
+
+// Обработка события от модели: выбран товар для просмотра
+events.on<{ product: Product }>("preview:changed", ({ product }) => {
+  // Рендерим данные товара в карточку превью
+  cardPreview.render({
+    id: product.id,
+    title: product.title,
+    price: product.price,
+    category: product.category,
+    image: CDN_URL + product.image,
+    description: product.description,
+  });
+
+  // Управляем состоянием кнопки
+  if (product.price === null) {
+    // Товар бесценный — кнопка заблокирована
+    cardPreview.cardButton.disabled = true;
+    cardPreview.cardButton.textContent = "Недоступно";
+  } else if (cartModel.isProductInCart(product.id)) {
+    // Товар уже в корзине — кнопка "Удалить из корзины"
+    cardPreview.cardButton.disabled = false;
+    cardPreview.cardButton.textContent = "Удалить из корзины";
+  } else {
+    // Товар доступен и не в корзине — кнопка "В корзину"
+    cardPreview.cardButton.disabled = false;
+    cardPreview.cardButton.textContent = "В корзину";
+  }
+
+  // Открываем модальное окно с превью
+  modal.content = cardPreview.render();
+  modal.render({ hidden: false });
+});
+
+// ===== Инициализация приложения =====
 
 async function init(): Promise<void> {
   try {
@@ -66,36 +104,3 @@ async function init(): Promise<void> {
 }
 
 init();
-
-// const gallery = ensureElement<HTMLElement>(".gallery");
-// const component = new HeaderView(ensureElement('.header'));
-// console.log(component)
-// gallery.replaceChildren(component.render({counter: 5}))
-// const catalogView = new GalleryView(ensureElement('.page__wrapper'))
-// console.log(catalogView);
-
-// const cardList: HTMLElement[] = []; 
-
-// catalog.products.forEach((product) => {
-//   const cardContainer = cloneTemplate<HTMLElement>("#card-catalog");
-//   const card = new CardCatalogView(cardContainer);
-
-//   card.render({
-//     title: product.title,
-//     price: product.price,
-//     category: product.category,
-//     image: CDN_URL + product.image
-//   })
-//   cardList.push(cardContainer);
-// });
-// catalogView.render({catalog: cardList});
-
-
-// const cardBasket = new CardBasketView(cloneTemplate("#card-basket"))
-
-// console.log(cardBasket)
-// cardBasket.render({
-//   title: "akrhgiq",
-//   price: 123,
-//   index: 3
-// })

@@ -37,7 +37,7 @@ export class ModalView extends Component<ModalData> {
   }
 
   set hidden(value: boolean) {
-    this.container.classList.toggle(".modal_active", value);
+    this.container.classList.toggle("modal_active", !value);
   }
 
   set content(child: HTMLElement) {
