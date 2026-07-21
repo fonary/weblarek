@@ -110,7 +110,8 @@ export class CardPreview extends CardCatalogView<CardPreviewData> {
       this.container,
     );
 
-    this.cardButton.addEventListener("click", () => {
+    this.cardButton.addEventListener("click", (e: Event) => {
+      e.stopPropagation();
       this.events?.emit("card:order");
     });
   }
