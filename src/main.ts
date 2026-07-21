@@ -30,7 +30,7 @@ const gallery = new GalleryView(ensureElement<HTMLElement>(".page__wrapper"));
 const cardPreview = new CardPreview(cloneTemplate<HTMLElement>("#card-preview"), events);
 const modal = new ModalView(ensureElement<HTMLElement>("#modal-container"), events);
 
-// ===== Обработка событий =====
+// Обработка событий 
 
 // Обработка события: каталог товаров изменился
 events.on<{ products: Product[] }>("items:changed", ({ products }) => {
@@ -91,7 +91,35 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
   modal.render({ hidden: false });
 });
 
-// ===== Инициализация приложения =====
+// Обработка события от представления: нажатие кнопки "Купить"/"Удалить" в превью
+events.on("card:order", () => {
+  const product = catalogModel.selectedProduct;
+  if (!product) return;
+
+  if (cartModel.isProductInCart(product.id)) {
+    // Товар уже в корзине — удаляем
+    cartModel.deleteProduct(product);
+  } else {
+    // Товар не в корзине — добавляем
+    cartModel.addProduct(product);
+  }
+
+  // Закрываем модальное окно
+  modal.render({ hidden: true });
+});
+
+// Обработка события от модели: корзина изменилась
+events.on<{ products: Product[] }>("basket:changed", () => {
+  // Обновляем счётчик в шапке
+  header.render({ counter: cartModel.getProductCount() });
+});
+
+// Обработка события от представления: закрытие модального окна
+events.on("modal:close", () => {
+  modal.render({ hidden: true });
+});
+
+// Инициализация приложения
 
 async function init(): Promise<void> {
   try {
