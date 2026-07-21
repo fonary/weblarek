@@ -72,10 +72,6 @@ export class OrderFormView extends FormView<OrderFormData> {
 
     this.paymentButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
-        console.log("Клик по кнопке оплаты:", {
-          name: btn.name,
-          value: btn.value,
-        });
         this.events.emit("form:change", {
           name: "payment",
           value: btn.name,

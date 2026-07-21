@@ -1,13 +1,28 @@
+/**
+ * @file Основной файл инициализации приложения. Управляет моделями, представлениями и обработкой событий.
+ * Реализует архитектуру MVP (Model-View-Presenter) с использованием шаблона "наблюдатель" через событийный брокер.
+ */
+
+// Импорт стилей SCSS
 import "./scss/styles.scss";
+
+// Модели приложения
 import { CatalogModel } from "./components/Models/CatalogModel";
 import { CartModel } from "./components/Models/CartModel";
 import { CustomerModel } from "./components/Models/CustomerModel";
+
+// Типы данных и API
 import { Product, ProductsResponse } from "./types";
 import { Api } from "./components/base/Api";
 import { ClientApi } from "./components/communication/ClientApi";
+
+// Константы и утилиты
 import { API_URL, CDN_URL } from "./utils/constants";
 import { cloneTemplate, ensureElement } from "./utils/utils";
+
+// Представления (Views)
 import { HeaderView } from "./components/views/HeaderView";
+import { GalleryView } from "./components/views/GalleryView";
 import {
   CardBasketView,
   CardCatalogView,
@@ -16,42 +31,133 @@ import {
 import { ModalView } from "./components/views/ModalView";
 import { BasketView } from "./components/views/BasketView";
 import { ContactsForm, OrderFormView } from "./components/views/FormView";
-import { GalleryView } from "./components/views/GalleryView";
+import { SuccessView } from "./components/views/SuccessView";
+
+// Система событий
 import { EventEmitter } from "./components/base/Events";
 
-// API и брокер событий
+/**
+ * Экземпляр API-клиента для взаимодействия с сервером.
+ * @type {Api}
+ */
 const api = new Api(API_URL);
+
+/**
+ * Клиентский API-интерфейс, обёртка над `Api`, обеспечивающий бизнес-логику обмена данными.
+ * @type {ClientApi}
+ */
 const clientApi = new ClientApi(api);
+
+/**
+ * Событийный брокер для декларативной реактивной архитектуры.
+ * @type {EventEmitter}
+ */
 const events = new EventEmitter();
 
-// Модели
+/**
+ * Модель каталога товаров.
+ * Отвечает за хранение и управление списком товаров и текущего выбранного товара.
+ * @type {CatalogModel}
+ */
 const catalogModel = new CatalogModel(events);
+
+/**
+ * Модель корзины покупок.
+ * Отвечает за добавление/удаление товаров, подсчёт итоговой суммы и количества.
+ * @type {CartModel}
+ */
 const cartModel = new CartModel(events);
+
+/**
+ * Модель данных покупателя (адрес, способ оплаты, контактные данные).
+ * Отвечает за валидацию и хранение формы заказа.
+ * @type {CustomerModel}
+ */
 const customerModel = new CustomerModel(events);
 
-// Представления
+/**
+ * Представление шапки сайта.
+ * Отображает счётчик товаров в корзине.
+ * @type {HeaderView}
+ */
 const header = new HeaderView(ensureElement<HTMLElement>(".header"), events);
+
+/**
+ * Представление галереи товаров.
+ * Отображает список карточек товаров.
+ * @type {GalleryView}
+ */
 const gallery = new GalleryView(ensureElement<HTMLElement>(".page__wrapper"));
+
+/**
+ * Представление превью товара в модальном окне.
+ * @type {CardPreview}
+ */
 const cardPreview = new CardPreview(
   cloneTemplate<HTMLElement>("#card-preview"),
   events,
 );
+
+/**
+ * Представление модального окна.
+ * @type {ModalView}
+ */
 const modal = new ModalView(
   ensureElement<HTMLElement>("#modal-container"),
   events,
 );
+
+/**
+ * Представление корзины.
+ * Отображает выбранные товары и итоговую стоимость.
+ * @type {BasketView}
+ */
 const basket = new BasketView(cloneTemplate<HTMLElement>("#basket"), events);
 basket.valid = cartModel.getTotalAmount() > 0;
+
+/**
+ * Представление формы заказа (адрес и способ оплаты).
+ * @type {OrderFormView}
+ */
 const orderForm = new OrderFormView(
   cloneTemplate<HTMLFormElement>("#order"),
   events,
 );
-const contactsForm = new ContactsForm(cloneTemplate<HTMLFormElement>("#contacts"), events);
+
+/**
+ * Представление формы контактов (email и телефон).
+ * @type {ContactsForm}
+ */
+const contactsForm = new ContactsForm(
+  cloneTemplate<HTMLFormElement>("#contacts"),
+  events,
+);
+
+/**
+ * Текущее открытое представление формы в модальном окне.
+ * Возможные значения: `"order"`, `"contacts"`, `null`.
+ * @type {"order" | "contacts" | null}
+ */
 let currentForm: "order" | "contacts" | null = null;
 
-// Обработка событий
+/**
+ * Представление экрана успеха после оформления заказа.
+ * @type {SuccessView}
+ */
+const successView = new SuccessView(
+  cloneTemplate<HTMLElement>("#success"),
+  events,
+);
 
-// Обработка события: каталог товаров изменился
+// === Обработка событий ===
+
+/**
+ * Обработчик изменения каталога товаров.
+ * При обновлении списка товаров перерисовывает галерею карточек.
+ * @event "items:changed"
+ * @param {Object} data - объект с новыми товарами.
+ * @param {Product[]} data.products - массив товаров для отображения.
+ */
 events.on<{ products: Product[] }>("items:changed", ({ products }) => {
   const cardList: HTMLElement[] = products.map((product) => {
     const cardContainer = cloneTemplate<HTMLElement>("#card-catalog");
@@ -72,15 +178,25 @@ events.on<{ products: Product[] }>("items:changed", ({ products }) => {
   gallery.render({ catalog: cardList });
 });
 
-// Обработка события от представления: клик по карточке в каталоге
+/**
+ * Обработчик выбора товара в каталоге.
+ * Обновляет выбранный товар в модели.
+ * @event "card:select"
+ * @param {Object} data - данные карточки.
+ * @param {string} data.id - идентификатор выбранного товара.
+ */
 events.on<{ id: string }>("card:select", ({ id }) => {
-  // Сохраняем выбранный товар в модели
   catalogModel.selectedProduct = id;
 });
 
-// Обработка события от модели: выбран товар для просмотра
+/**
+ * Обработчик обновления выбранного товара для превью.
+ * Рендерит детальную карточку товара и управляет состоянием кнопки.
+ * @event "preview:changed"
+ * @param {Object} data - объект с данными товара.
+ * @param {Product} data.product - выбранный товар.
+ */
 events.on<{ product: Product }>("preview:changed", ({ product }) => {
-  // Рендер данных товара в карточку превью
   cardPreview.render({
     id: product.id,
     title: product.title,
@@ -90,36 +206,38 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
     description: product.description,
   });
 
-  // Управляем состоянием кнопки
+  // Управление состоянием кнопки
   if (product.price === null) {
-    // Товар бесценный — кнопка заблокирована
     cardPreview.cardButton.disabled = true;
     cardPreview.cardButton.textContent = "Недоступно";
   } else if (cartModel.isProductInCart(product.id)) {
-    // Товар уже в корзине — кнопка "Удалить из корзины"
     cardPreview.cardButton.disabled = false;
     cardPreview.cardButton.textContent = "Удалить из корзины";
   } else {
-    // Товар доступен и не в корзине — кнопка "В корзину"
     cardPreview.cardButton.disabled = false;
     cardPreview.cardButton.textContent = "В корзину";
   }
 
-  // Открываем модальное окно с превью
   modal.content = cardPreview.render();
   modal.render({ hidden: false });
 });
 
-// Обработка события от представления: клик по иконке корзины в шапке
+/**
+ * Обработчик открытия корзины (клик по иконке в шапке).
+ * @event "basket:open"
+ */
 events.on("basket:open", () => {
   modal.content = basket.render();
   modal.render({ hidden: false });
 });
 
-// Обработка события от представления: нажатие кнопки "Оформить" в корзине
+/**
+ * Обработчик перехода к оформлению заказа.
+ * Рендерит первую форму (адрес и оплата).
+ * @event "order:edit"
+ */
 events.on("order:edit", () => {
   currentForm = "order";
-  // Рендерим форму заказа с пустыми ошибками — placeholder отображается
   orderForm.render({
     payment: customerModel.getCustomer().payment,
     address: customerModel.getCustomer().address,
@@ -130,17 +248,21 @@ events.on("order:edit", () => {
   modal.render({ hidden: false });
 });
 
-// Обработка события от представления: изменение полей формы
+/**
+ * Обработчик изменения полей формы.
+ * Обновляет данные модели и отображает ошибки валидации.
+ * @event "form:change"
+ * @param {Object} data - объект с именем поля и его значением.
+ * @param {string} data.name - имя поля (payment, address, email, phone).
+ * @param {string} data.value - новое значение поля.
+ */
 events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
-  console.log("form:change:", { name, value });
-  // Обновляем модель
   (customerModel as any)[name] = value;
-  
+
   const customer = customerModel.getCustomer();
   const errors = customerModel.validate();
-  
+
   if (name === "payment" || name === "address") {
-    // Первая форма — показываем только ошибки payment и address
     orderForm.render({
       payment: customer.payment,
       address: customer.address,
@@ -148,7 +270,6 @@ events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
       error: { payment: errors.payment, address: errors.address },
     });
   } else if (name === "email" || name === "phone") {
-    // Вторая форма — показываем только ошибки email и phone
     contactsForm.render({
       email: customer.email,
       phone: customer.phone,
@@ -158,12 +279,14 @@ events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
   }
 });
 
-// Обработка события от представления: отправка формы
-events.on("form:submit", () => {
+/**
+ * Обработчик отправки формы.
+ * Переключает между формами или отправляет заказ на сервер.
+ * @event "form:submit"
+ */
+events.on("form:submit", async () => {
   const errors = customerModel.validate();
-  
   if (currentForm === "order") {
-    // Первая форма — переходим на вторую
     if (!errors.payment && !errors.address) {
       currentForm = "contacts";
       contactsForm.render({
@@ -174,7 +297,6 @@ events.on("form:submit", () => {
       });
       modal.content = contactsForm.render();
     } else {
-      // Показываем ошибки первой формы
       orderForm.render({
         payment: customerModel.getCustomer().payment,
         address: customerModel.getCustomer().address,
@@ -183,14 +305,32 @@ events.on("form:submit", () => {
       });
     }
   } else if (currentForm === "contacts") {
-    // Вторая форма — отправляем заказ
     if (!errors.email && !errors.phone) {
-      // TODO: Отправка заказа на сервер
-      console.log("Отправка заказа:", customerModel.getCustomer());
-      modal.render({ hidden: true });
-      currentForm = null;
+      try {
+        const order = await clientApi.placeOrder({
+          payment: customerModel.getCustomer().payment!,
+          address: customerModel.getCustomer().address,
+          email: customerModel.getCustomer().email,
+          phone: customerModel.getCustomer().phone,
+          total: cartModel.getTotalAmount(),
+          items: cartModel.getProducts().map((p) => p.id),
+        });
+
+        successView.render({ amount: order.total });
+        modal.content = successView.render();
+
+        cartModel.deleteAll();
+        customerModel.clear();
+        currentForm = null;
+      } catch (err) {
+        contactsForm.render({
+          email: customerModel.getCustomer().email,
+          phone: customerModel.getCustomer().phone,
+          valid: false,
+          error: { email: "Ошибка отправки заказа", phone: "" },
+        });
+      }
     } else {
-      // Показываем ошибки второй формы
       contactsForm.render({
         email: customerModel.getCustomer().email,
         phone: customerModel.getCustomer().phone,
@@ -201,29 +341,34 @@ events.on("form:submit", () => {
   }
 });
 
-// Обработка события от представления: нажатие кнопки "Купить"/"Удалить" в превью
+/**
+ * Обработчик нажатия кнопки «Купить» / «Удалить» в карточке превью.
+ * Добавляет или удаляет товар из корзины.
+ * @event "card:order"
+ */
 events.on("card:order", () => {
   const product = catalogModel.selectedProduct;
   if (!product) return;
 
   if (cartModel.isProductInCart(product.id)) {
-    // Товар уже в корзине — удаляем
     cartModel.deleteProduct(product);
   } else {
-    // Товар не в корзине — добавляем
     cartModel.addProduct(product);
   }
 
-  // Закрываем модальное окно
   modal.render({ hidden: true });
 });
 
-// Обработка события от модели: корзина изменилась
+/**
+ * Обработчик изменения содержимого корзины.
+ * Обновляет интерфейс корзины и шапки.
+ * @event "basket:changed"
+ * @param {Object} data - объект с обновлённым списком товаров.
+ * @param {Product[]} data.products - список товаров в корзине.
+ */
 events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
-  // Обновляем счётчик в шапке
   header.render({ counter: cartModel.getProductCount() });
 
-  // Создаём карточки товаров в корзине
   const purchases: HTMLElement[] = products.map((product, index) => {
     const cardContainer = cloneTemplate<HTMLElement>("#card-basket");
     const card = new CardBasketView(cardContainer, events);
@@ -236,17 +381,20 @@ events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
     return cardContainer;
   });
 
-  // Рендерим корзину
   basket.render({
     purchases,
     totalCost: cartModel.getTotalAmount(),
   });
 
-  // Кнопка "Оформить" активна только если есть товары
   basket.valid = products.length > 0;
 });
 
-// Обработка события от представления: удаление товара из корзины
+/**
+ * Обработчик удаления товара из корзины.
+ * @event "basket:delete"
+ * @param {Object} data - идентификатор удаляемого товара.
+ * @param {string} data.id - ID товара.
+ */
 events.on<{ id: string }>("basket:delete", ({ id }) => {
   const product = catalogModel.getProductById(id);
   if (product) {
@@ -254,18 +402,25 @@ events.on<{ id: string }>("basket:delete", ({ id }) => {
   }
 });
 
-// Обработка события от представления: закрытие модального окна
+/**
+ * Обработчик закрытия модального окна.
+ * @event "modal:close"
+ */
 events.on("modal:close", () => {
   modal.render({ hidden: true });
 });
 
-// Инициализация приложения
+// === Инициализация приложения ===
 
+/**
+ * Асинхронная функция инициализации приложения.
+ * Загружает товары с сервера и передаёт их в модель каталога.
+ * @returns {Promise<void>}
+ */
 async function init(): Promise<void> {
   try {
     const productsResponse: ProductsResponse = await clientApi.getProducts();
-    const products: Product[] = productsResponse.items;
-    catalogModel.products = products;
+    catalogModel.products = productsResponse.items;
   } catch (error) {
     console.error(
       "Не удалось загрузить данные с сервера из-за ошибки: ",
