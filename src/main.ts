@@ -189,6 +189,22 @@ events.on<{ id: string }>("card:select", ({ id }) => {
  * @param {Product} data.product - выбранный товар.
  */
 events.on<{ product: Product }>("preview:changed", ({ product }) => {
+  // Вычисляем состояние кнопки
+  let buttonText: string;
+  let buttonDisabled: boolean;
+
+  if (product.price === null) {
+    buttonText = "Недоступно";
+    buttonDisabled = true;
+  } else if (cartModel.isProductInCart(product.id)) {
+    buttonText = "Удалить из корзины";
+    buttonDisabled = false;
+  } else {
+    buttonText = "В корзину";
+    buttonDisabled = false;
+  }
+
+  // Один вызов render — все данные, включая состояние кнопки
   cardPreview.render({
     id: product.id,
     title: product.title,
@@ -196,19 +212,9 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
     category: product.category,
     image: CDN_URL + product.image,
     description: product.description,
+    buttonText,
+    buttonDisabled,
   });
-
-  // Управление состоянием кнопки
-  if (product.price === null) {
-    cardPreview.cardButton.disabled = true;
-    cardPreview.cardButton.textContent = "Недоступно";
-  } else if (cartModel.isProductInCart(product.id)) {
-    cardPreview.cardButton.disabled = false;
-    cardPreview.cardButton.textContent = "Удалить из корзины";
-  } else {
-    cardPreview.cardButton.disabled = false;
-    cardPreview.cardButton.textContent = "В корзину";
-  }
 
   modal.content = cardPreview.render();
   modal.render({ hidden: false });

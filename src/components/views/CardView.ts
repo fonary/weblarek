@@ -8,7 +8,10 @@ type CardCatalogData = Pick<
   Product,
   "id" | "title" | "price" | "category" | "image"
 >;
-type CardPreviewData = Product;
+type CardPreviewData = Product & {
+  buttonText: string;
+  buttonDisabled: boolean;
+};
 type CardBasketData = Pick<Product, "id" | "title" | "price"> & {
   index: number;
 };
@@ -16,7 +19,7 @@ type CardBasketData = Pick<Product, "id" | "title" | "price"> & {
 abstract class CardView<T> extends Component<T> {
   protected titleEl: HTMLElement;
   protected priceEl: HTMLElement;
-  abstract cardButton: HTMLButtonElement;
+  protected abstract cardButton: HTMLButtonElement;
 
   constructor(
     container: HTMLElement,
@@ -49,7 +52,7 @@ export class CardCatalogView<
 > extends CardView<T> {
   protected categoryEl: HTMLElement;
   protected cardImage: HTMLImageElement;
-  cardButton: HTMLButtonElement;
+  protected cardButton: HTMLButtonElement;
 
   constructor(
     container: HTMLElement,
@@ -90,6 +93,7 @@ export class CardCatalogView<
 
 export class CardPreview extends CardCatalogView<CardPreviewData> {
   private descriptionEl: HTMLElement;
+  protected cardButton: HTMLButtonElement;
 
   constructor(
     container: HTMLElement,
@@ -113,6 +117,14 @@ export class CardPreview extends CardCatalogView<CardPreviewData> {
 
   set description(text: string) {
     this.descriptionEl.textContent = text;
+  }
+
+  set buttonText(value: string) {
+    this.cardButton.textContent = value;
+  }
+
+  set buttonDisabled(value: boolean) {
+    this.cardButton.disabled = value;
   }
 }
 
