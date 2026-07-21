@@ -17,6 +17,7 @@ export class FormView<T> extends Component<T> {
   constructor(
     container: HTMLFormElement,
     protected events: IEvents,
+    protected submitEventName: string = "form:submit",
   ) {
     super(container);
 
@@ -36,7 +37,7 @@ export class FormView<T> extends Component<T> {
 
     this.container.addEventListener("submit", (e: Event) => {
       e.preventDefault();
-      this.events.emit("form:submit");
+      this.events.emit(this.submitEventName);
     });
   }
 
@@ -59,7 +60,7 @@ export class OrderFormView extends FormView<OrderFormData> {
   private paymentButtons: HTMLButtonElement[];
 
   constructor(container: HTMLFormElement, events: IEvents) {
-    super(container, events);
+    super(container, events, "order:submit");
 
     this.addressInputEl = ensureElement<HTMLInputElement>(
       "input[name=address]",
@@ -96,7 +97,7 @@ export class ContactsForm extends FormView<ContactsFormData> {
   private phoneInputEl: HTMLInputElement;
 
   constructor(container: HTMLFormElement, events: IEvents) {
-    super(container, events);
+    super(container, events, "contacts:submit");
 
     this.emailInputEl = ensureElement<HTMLInputElement>(
       "input[name=email]",

@@ -133,13 +133,6 @@ const contactsForm = new ContactsForm(
 );
 
 /**
- * Текущее открытое представление формы в модальном окне.
- * Возможные значения: `"order"`, `"contacts"`, `null`.
- * @type {"order" | "contacts" | null}
- */
-let currentForm: "order" | "contacts" | null = null;
-
-/**
  * Представление экрана успеха после оформления заказа.
  * @type {SuccessView}
  */
@@ -236,7 +229,6 @@ events.on("basket:open", () => {
  * @event "order:edit"
  */
 events.on("order:edit", () => {
-  currentForm = "order";
   orderForm.render({
     payment: customerModel.getCustomer().payment,
     address: customerModel.getCustomer().address,
@@ -285,65 +277,64 @@ events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
   }
 });
 
-/**
- * Обработчик отправки формы.
- * Переключает между формами или отправляет заказ на сервер.
- * @event "form:submit"
- */
-events.on("form:submit", async () => {
+// Обработчик сабмита формы заказа (адрес + способ оплаты)
+events.on("order:submit", () => {
   const errors = customerModel.validate();
-  if (currentForm === "order") {
-    if (!errors.payment && !errors.address) {
-      currentForm = "contacts";
-      contactsForm.render({
-        email: customerModel.getCustomer().email,
-        phone: customerModel.getCustomer().phone,
-        valid: false,
-        error: {},
-      });
-      modal.content = contactsForm.render();
-    } else {
-      orderForm.render({
-        payment: customerModel.getCustomer().payment,
+
+  if (!errors.payment && !errors.address) {
+    // Валидация прошла — открываем форму контактов
+    contactsForm.render({
+      email: customerModel.getCustomer().email,
+      phone: customerModel.getCustomer().phone,
+      valid: false,
+      error: {},
+    });
+    modal.content = contactsForm.render();
+  } else {
+    // Показываем ошибки валидации
+    orderForm.render({
+      payment: customerModel.getCustomer().payment,
+      address: customerModel.getCustomer().address,
+      valid: false,
+      error: { payment: errors.payment, address: errors.address },
+    });
+  }
+});
+
+// Обработчик сабмита формы контактов
+events.on("contacts:submit", async () => {
+  const errors = customerModel.validate();
+
+  if (!errors.email && !errors.phone) {
+    try {
+      const order = await clientApi.placeOrder({
+        payment: customerModel.getCustomer().payment!,
         address: customerModel.getCustomer().address,
-        valid: false,
-        error: { payment: errors.payment, address: errors.address },
+        email: customerModel.getCustomer().email,
+        phone: customerModel.getCustomer().phone,
+        total: cartModel.getTotalAmount(),
+        items: cartModel.getProducts().map((p) => p.id),
       });
-    }
-  } else if (currentForm === "contacts") {
-    if (!errors.email && !errors.phone) {
-      try {
-        const order = await clientApi.placeOrder({
-          payment: customerModel.getCustomer().payment!,
-          address: customerModel.getCustomer().address,
-          email: customerModel.getCustomer().email,
-          phone: customerModel.getCustomer().phone,
-          total: cartModel.getTotalAmount(),
-          items: cartModel.getProducts().map((p) => p.id),
-        });
 
-        successView.render({ amount: order.total });
-        modal.content = successView.render();
-
-        cartModel.deleteAll();
-        customerModel.clear();
-        currentForm = null;
-      } catch (err) {
-        contactsForm.render({
-          email: customerModel.getCustomer().email,
-          phone: customerModel.getCustomer().phone,
-          valid: false,
-          error: { email: "Ошибка отправки заказа", phone: "" },
-        });
-      }
-    } else {
+      successView.render({ amount: order.total });
+      modal.content = successView.render();
+      cartModel.deleteAll();
+      customerModel.clear();
+    } catch (err) {
       contactsForm.render({
         email: customerModel.getCustomer().email,
         phone: customerModel.getCustomer().phone,
         valid: false,
-        error: { email: errors.email, phone: errors.phone },
+        error: { email: "Ошибка отправки заказа", phone: "" },
       });
     }
+  } else {
+    contactsForm.render({
+      email: customerModel.getCustomer().email,
+      phone: customerModel.getCustomer().phone,
+      valid: false,
+      error: { email: errors.email, phone: errors.phone },
+    });
   }
 });
 
