@@ -3,8 +3,12 @@ import { ensureAllElements, ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";
 
-type OrderFormData = Omit<Customer, "payment" | "address">;
-type ContactsFormData = Omit<Customer, "email" | "phone">;
+type FormState = {
+  valid: boolean;
+  error?: CustomerErrors;
+};
+type OrderFormData = Pick<Customer, "payment" | "address"> & FormState;
+type ContactsFormData = Pick<Customer, "email" | "phone"> & FormState;
 
 export class FormView<T> extends Component<T> {
   protected submitButton: HTMLButtonElement;
@@ -62,12 +66,16 @@ export class OrderFormView extends FormView<OrderFormData> {
       this.container,
     );
     this.paymentButtons = ensureAllElements<HTMLButtonElement>(
-      "button[name=payment]",
+      ".button_alt",
       this.container,
     );
 
     this.paymentButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
+        console.log("Клик по кнопке оплаты:", {
+          name: btn.name,
+          value: btn.value,
+        });
         this.events.emit("form:change", {
           name: "payment",
           value: btn.name,
