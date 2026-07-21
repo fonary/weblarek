@@ -40,6 +40,7 @@ const modal = new ModalView(
   events,
 );
 const basket = new BasketView(cloneTemplate<HTMLElement>("#basket"), events);
+basket.valid = cartModel.getTotalAmount() > 0;
 
 // Обработка событий
 
@@ -133,8 +134,9 @@ events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
   // Создаём карточки товаров в корзине
   const purchases: HTMLElement[] = products.map((product, index) => {
     const cardContainer = cloneTemplate<HTMLElement>("#card-basket");
-    const card = new CardBasketView(cardContainer);
+    const card = new CardBasketView(cardContainer, events);
     card.render({
+      id: product.id,
       title: product.title,
       price: product.price,
       index: index + 1,
@@ -150,6 +152,14 @@ events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
 
   // Кнопка "Оформить" активна только если есть товары
   basket.valid = products.length > 0;
+});
+
+// Обработка события от представления: удаление товара из корзины
+events.on<{ id: string }>("basket:delete", ({ id }) => {
+  const product = catalogModel.getProductById(id);
+  if (product) {
+    cartModel.deleteProduct(product);
+  }
 });
 
 // Обработка события от представления: закрытие модального окна
