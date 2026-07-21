@@ -22,11 +22,11 @@ export class BasketView extends Component<BasketViewData> {
       this.container,
     );
     this.shoppingListEl = ensureElement<HTMLElement>(
-      ".basket-list",
+      ".basket__list",
       this.container,
     );
     this.totalCostEl = ensureElement<HTMLElement>(
-      ".basket-price",
+      ".basket__price",
       this.container,
     );
 
@@ -35,8 +35,16 @@ export class BasketView extends Component<BasketViewData> {
     });
   }
 
+  set valid(value: boolean) {
+    this.completeButton.disabled = !value;
+  }
+
   set purchases(purchases: HTMLElement[]) {
-    this.shoppingListEl.replaceChildren(...purchases);
+    if (purchases.length === 0) {
+      this.shoppingListEl.replaceChildren();
+    } else {
+      this.shoppingListEl.replaceChildren(...purchases);
+    }
   }
 
   set totalCost(value: number) {

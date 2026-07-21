@@ -5,14 +5,18 @@ import { CustomerModel } from "./components/Models/CustomerModel";
 import { Product, ProductsResponse } from "./types";
 import { Api } from "./components/base/Api";
 import { ClientApi } from "./components/communication/ClientApi";
-import { API_URL, CDN_URL } from './utils/constants';
+import { API_URL, CDN_URL } from "./utils/constants";
 import { cloneTemplate, ensureElement } from "./utils/utils";
 import { HeaderView } from "./components/views/HeaderView";
-import { CardBasketView, CardCatalogView, CardPreview } from "./components/views/CardView";
-import {ModalView} from "./components/views/ModalView";
+import {
+  CardBasketView,
+  CardCatalogView,
+  CardPreview,
+} from "./components/views/CardView";
+import { ModalView } from "./components/views/ModalView";
+import { BasketView } from "./components/views/BasketView";
 import { GalleryView } from "./components/views/GalleryView";
 import { EventEmitter } from "./components/base/Events";
-
 
 // API и брокер событий
 const api = new Api(API_URL);
@@ -27,10 +31,17 @@ const customerModel = new CustomerModel(events);
 // Представления
 const header = new HeaderView(ensureElement<HTMLElement>(".header"), events);
 const gallery = new GalleryView(ensureElement<HTMLElement>(".page__wrapper"));
-const cardPreview = new CardPreview(cloneTemplate<HTMLElement>("#card-preview"), events);
-const modal = new ModalView(ensureElement<HTMLElement>("#modal-container"), events);
+const cardPreview = new CardPreview(
+  cloneTemplate<HTMLElement>("#card-preview"),
+  events,
+);
+const modal = new ModalView(
+  ensureElement<HTMLElement>("#modal-container"),
+  events,
+);
+const basket = new BasketView(cloneTemplate<HTMLElement>("#basket"), events);
 
-// Обработка событий 
+// Обработка событий
 
 // Обработка события: каталог товаров изменился
 events.on<{ products: Product[] }>("items:changed", ({ products }) => {
@@ -61,7 +72,7 @@ events.on<{ id: string }>("card:select", ({ id }) => {
 
 // Обработка события от модели: выбран товар для просмотра
 events.on<{ product: Product }>("preview:changed", ({ product }) => {
-  // Рендерим данные товара в карточку превью
+  // Рендер данных товара в карточку превью
   cardPreview.render({
     id: product.id,
     title: product.title,
@@ -91,6 +102,12 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
   modal.render({ hidden: false });
 });
 
+// Обработка события от представления: клик по иконке корзины в шапке
+events.on("basket:open", () => {
+  modal.content = basket.render();
+  modal.render({ hidden: false });
+});
+
 // Обработка события от представления: нажатие кнопки "Купить"/"Удалить" в превью
 events.on("card:order", () => {
   const product = catalogModel.selectedProduct;
@@ -109,9 +126,30 @@ events.on("card:order", () => {
 });
 
 // Обработка события от модели: корзина изменилась
-events.on<{ products: Product[] }>("basket:changed", () => {
+events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
   // Обновляем счётчик в шапке
   header.render({ counter: cartModel.getProductCount() });
+
+  // Создаём карточки товаров в корзине
+  const purchases: HTMLElement[] = products.map((product, index) => {
+    const cardContainer = cloneTemplate<HTMLElement>("#card-basket");
+    const card = new CardBasketView(cardContainer);
+    card.render({
+      title: product.title,
+      price: product.price,
+      index: index + 1,
+    });
+    return cardContainer;
+  });
+
+  // Рендерим корзину
+  basket.render({
+    purchases,
+    totalCost: cartModel.getTotalAmount(),
+  });
+
+  // Кнопка "Оформить" активна только если есть товары
+  basket.valid = products.length > 0;
 });
 
 // Обработка события от представления: закрытие модального окна
@@ -127,7 +165,10 @@ async function init(): Promise<void> {
     const products: Product[] = productsResponse.items;
     catalogModel.products = products;
   } catch (error) {
-    console.error("Не удалось загрузить данные с сервера из-за ошибки: ", error);
+    console.error(
+      "Не удалось загрузить данные с сервера из-за ошибки: ",
+      error,
+    );
   }
 }
 
