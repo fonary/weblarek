@@ -229,11 +229,13 @@ events.on("basket:open", () => {
  * @event "order:edit"
  */
 events.on("order:edit", () => {
+  const customer = customerModel.getCustomer();
+  const errors = customerModel.validate();
   orderForm.render({
-    payment: customerModel.getCustomer().payment,
-    address: customerModel.getCustomer().address,
-    valid: false,
-    error: {},
+    payment: customer.payment,
+    address: customer.address,
+    valid: !errors.payment && !errors.address,
+    error: { payment: errors.payment, address: errors.address },
   });
   modal.content = orderForm.render();
   modal.render({ hidden: false });
@@ -280,21 +282,22 @@ events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
 // Обработчик сабмита формы заказа (адрес + способ оплаты)
 events.on("order:submit", () => {
   const errors = customerModel.validate();
+  const customer = customerModel.getCustomer();
 
   if (!errors.payment && !errors.address) {
     // Валидация прошла — открываем форму контактов
     contactsForm.render({
-      email: customerModel.getCustomer().email,
-      phone: customerModel.getCustomer().phone,
-      valid: false,
+      email: customer.email,
+      phone: customer.phone,
+      valid: !errors.email && !errors.phone,
       error: {},
     });
     modal.content = contactsForm.render();
   } else {
     // Показываем ошибки валидации
     orderForm.render({
-      payment: customerModel.getCustomer().payment,
-      address: customerModel.getCustomer().address,
+      payment: customer.payment,
+      address: customer.address,
       valid: false,
       error: { payment: errors.payment, address: errors.address },
     });
@@ -420,7 +423,6 @@ async function init(): Promise<void> {
     catalogModel.products = productsResponse.items;
     cartModel.deleteAll();
     customerModel.clear();
-
   } catch (error) {
     console.error(
       "Не удалось загрузить данные с сервера из-за ошибки: ",
