@@ -71,11 +71,15 @@ export class OrderFormView extends FormView<OrderFormData> {
       this.container,
     );
 
+    const paymentMap: Record<string, Payment> = {
+      card: "online",
+      cash: "cash",
+    };
+
     this.paymentButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
-        this.events.emit("form:change", {
-          name: "payment",
-          value: btn.name,
+        this.events.emit("payment:change", {
+          value: paymentMap[btn.name],
         });
       });
     });

@@ -12,7 +12,7 @@ import { CartModel } from "./components/Models/CartModel";
 import { CustomerModel } from "./components/Models/CustomerModel";
 
 // Типы данных и API
-import { Product, ProductsResponse } from "./types";
+import { Payment, Product, ProductsResponse } from "./types";
 import { Api } from "./components/base/Api";
 import { ClientApi } from "./components/communication/ClientApi";
 
@@ -255,20 +255,31 @@ events.on("order:edit", () => {
  * @param {string} data.name - имя поля (payment, address, email, phone).
  * @param {string} data.value - новое значение поля.
  */
+/**
+ * Обработчик изменения текстовых полей формы (address, email, phone).
+ * Обновляет данные модели и отображает ошибки валидации.
+ * @event "form:change"
+ */
 events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
-  type ValidKeys = Extract<
-    keyof CustomerModel,
-    "payment" | "address" | "email" | "phone"
-  >;
 
-  const key = name as ValidKeys;
-
-  (customerModel as Record<ValidKeys, any>)[key] = value;
+  switch (name) {
+    case "address":
+      customerModel.address = value;
+      break;
+    case "email":
+      customerModel.email = value;
+      break;
+    case "phone":
+      customerModel.phone = value;
+      break;
+    default:
+      return;
+  }
 
   const customer = customerModel.getCustomer();
   const errors = customerModel.validate();
 
-  if (name === "payment" || name === "address") {
+  if (name === "address") {
     orderForm.render({
       payment: customer.payment,
       address: customer.address,
@@ -285,7 +296,26 @@ events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
   }
 });
 
-// Обработчик сабмита формы заказа (адрес + способ оплаты)
+/**
+ * Обработчик выбора способа оплаты.
+ * Отдельное событие с типизированным значением Payment.
+ * @event "payment:change"
+ */
+events.on<{ value: Payment }>("payment:change", ({ value }) => {
+  customerModel.payment = value;
+
+  const customer = customerModel.getCustomer();
+  const errors = customerModel.validate();
+
+  orderForm.render({
+    payment: customer.payment,
+    address: customer.address,
+    valid: !errors.payment && !errors.address,
+    error: { payment: errors.payment, address: errors.address },
+  });
+});
+
+// Обработчик сабмита формы заказа
 events.on("order:submit", () => {
   const errors = customerModel.validate();
   const customer = customerModel.getCustomer();
