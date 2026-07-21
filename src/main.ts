@@ -113,7 +113,6 @@ const modal = new ModalView(
  * @type {BasketView}
  */
 const basket = new BasketView(cloneTemplate<HTMLElement>("#basket"), events);
-basket.valid = cartModel.getTotalAmount() > 0;
 
 /**
  * Представление формы заказа (адрес и способ оплаты).
@@ -428,6 +427,9 @@ async function init(): Promise<void> {
   try {
     const productsResponse: ProductsResponse = await clientApi.getProducts();
     catalogModel.products = productsResponse.items;
+    cartModel.deleteAll();
+    customerModel.clear();
+
   } catch (error) {
     console.error(
       "Не удалось загрузить данные с сервера из-за ошибки: ",
