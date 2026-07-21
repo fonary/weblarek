@@ -237,31 +237,23 @@ events.on("basket:open", () => {
 events.on("order:edit", () => {
   const customer = customerModel.getCustomer();
   const errors = customerModel.validate();
+  const hasData = customer.payment !== null || customer.address !== "";
   orderForm.render({
     payment: customer.payment,
     address: customer.address,
     valid: !errors.payment && !errors.address,
-    error: { payment: errors.payment, address: errors.address },
+    error: hasData ? { payment: errors.payment, address: errors.address } : {},
   });
   modal.content = orderForm.render();
   modal.render({ hidden: false });
 });
 
 /**
- * Обработчик изменения полей формы.
- * Обновляет данные модели и отображает ошибки валидации.
- * @event "form:change"
- * @param {Object} data - объект с именем поля и его значением.
- * @param {string} data.name - имя поля (payment, address, email, phone).
- * @param {string} data.value - новое значение поля.
- */
-/**
  * Обработчик изменения текстовых полей формы (address, email, phone).
- * Обновляет данные модели и отображает ошибки валидации.
+ * Только сохраняет значение в модель — рендеринг выполнит order:changed.
  * @event "form:change"
  */
 events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
-
   switch (name) {
     case "address":
       customerModel.address = value;
@@ -275,35 +267,22 @@ events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
     default:
       return;
   }
-
-  const customer = customerModel.getCustomer();
-  const errors = customerModel.validate();
-
-  if (name === "address") {
-    orderForm.render({
-      payment: customer.payment,
-      address: customer.address,
-      valid: !errors.payment && !errors.address,
-      error: { payment: errors.payment, address: errors.address },
-    });
-  } else if (name === "email" || name === "phone") {
-    contactsForm.render({
-      email: customer.email,
-      phone: customer.phone,
-      valid: !errors.email && !errors.phone,
-      error: { email: errors.email, phone: errors.phone },
-    });
-  }
 });
-
 /**
  * Обработчик выбора способа оплаты.
- * Отдельное событие с типизированным значением Payment.
+ * Только сохраняет значение в модель — рендеринг выполнит order:changed.
  * @event "payment:change"
  */
 events.on<{ value: Payment }>("payment:change", ({ value }) => {
   customerModel.payment = value;
+});
 
+/**
+ * Обработчик изменения данных покупателя.
+ * Перерисовывает обе формы с актуальными данными и ошибками валидации.
+ * @event "order:changed"
+ */
+events.on("order:changed", () => {
   const customer = customerModel.getCustomer();
   const errors = customerModel.validate();
 
@@ -313,37 +292,26 @@ events.on<{ value: Payment }>("payment:change", ({ value }) => {
     valid: !errors.payment && !errors.address,
     error: { payment: errors.payment, address: errors.address },
   });
+
+  contactsForm.render({
+    email: customer.email,
+    phone: customer.phone,
+    valid: !errors.email && !errors.phone,
+    error: { email: errors.email, phone: errors.phone },
+  });
 });
 
 // Обработчик сабмита формы заказа
 events.on("order:submit", () => {
   const errors = customerModel.validate();
-  const customer = customerModel.getCustomer();
-
   if (!errors.payment && !errors.address) {
-    // Валидация прошла — открываем форму контактов
-    contactsForm.render({
-      email: customer.email,
-      phone: customer.phone,
-      valid: !errors.email && !errors.phone,
-      error: {},
-    });
     modal.content = contactsForm.render();
-  } else {
-    // Показываем ошибки валидации
-    orderForm.render({
-      payment: customer.payment,
-      address: customer.address,
-      valid: false,
-      error: { payment: errors.payment, address: errors.address },
-    });
   }
 });
 
 // Обработчик сабмита формы контактов
 events.on("contacts:submit", async () => {
   const errors = customerModel.validate();
-
   if (!errors.email && !errors.phone) {
     try {
       const order = await clientApi.placeOrder({
@@ -358,7 +326,7 @@ events.on("contacts:submit", async () => {
       successView.render({ amount: order.total });
       modal.content = successView.render();
       cartModel.deleteAll();
-      customerModel.clear();
+      customerModel.clear(); // order:changed очистит формы автоматически
     } catch (err) {
       contactsForm.render({
         email: customerModel.getCustomer().email,
@@ -367,14 +335,8 @@ events.on("contacts:submit", async () => {
         error: { email: "Ошибка отправки заказа", phone: "" },
       });
     }
-  } else {
-    contactsForm.render({
-      email: customerModel.getCustomer().email,
-      phone: customerModel.getCustomer().phone,
-      valid: false,
-      error: { email: errors.email, phone: errors.phone },
-    });
   }
+  // Если есть ошибки валидации, order:changed уже перерисовал форму
 });
 
 /**
