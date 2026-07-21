@@ -120,7 +120,10 @@ export class CardBasketView extends CardView<CardBasketData> {
   private indexEl: HTMLElement;
   cardButton: HTMLButtonElement;
 
-  constructor(container: HTMLElement, protected events?: IEvents) {
+  constructor(
+    container: HTMLElement,
+    protected events?: IEvents,
+  ) {
     super(container, events);
     this.indexEl = ensureElement<HTMLElement>(
       ".basket__item-index",

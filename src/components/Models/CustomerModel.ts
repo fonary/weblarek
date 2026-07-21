@@ -11,7 +11,7 @@ export class CustomerModel {
 
   set payment(payment: Payment | null) {
     this.#payment = payment;
-    this.events.emit("order:changed", this.validate());    
+    this.events.emit("order:changed", this.validate());
   }
 
   set address(address: string) {

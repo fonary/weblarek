@@ -257,8 +257,11 @@ events.on("order:edit", () => {
  * @param {string} data.value - новое значение поля.
  */
 events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
-   type ValidKeys = Extract<keyof CustomerModel, "payment" | "address" | "email" | "phone">;
-  
+  type ValidKeys = Extract<
+    keyof CustomerModel,
+    "payment" | "address" | "email" | "phone"
+  >;
+
   const key = name as ValidKeys;
 
   (customerModel as Record<ValidKeys, any>)[key] = value;
