@@ -30,7 +30,7 @@ import {
 } from "./components/views/CardView";
 import { ModalView } from "./components/views/ModalView";
 import { BasketView } from "./components/views/BasketView";
-import { ContactsForm, OrderFormView } from "./components/views/FormView";
+import { ContactsFormView, OrderFormView } from "./components/views/FormView";
 import { SuccessView } from "./components/views/SuccessView";
 
 // Система событий
@@ -125,9 +125,9 @@ const orderForm = new OrderFormView(
 
 /**
  * Представление формы контактов (email и телефон).
- * @type {ContactsForm}
+ * @type {ContactsFormView}
  */
-const contactsForm = new ContactsForm(
+const contactsForm = new ContactsFormView(
   cloneTemplate<HTMLFormElement>("#contacts"),
   events,
 );

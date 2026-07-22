@@ -10,7 +10,7 @@ type FormState = {
 type OrderFormData = Pick<Customer, "payment" | "address"> & FormState;
 type ContactsFormData = Pick<Customer, "email" | "phone"> & FormState;
 
-export class FormView<T> extends Component<T> {
+abstract class FormView<T> extends Component<T> {
   protected submitButton: HTMLButtonElement;
   protected errorsEl: HTMLElement;
 
@@ -95,7 +95,7 @@ export class OrderFormView extends FormView<OrderFormData> {
   }
 }
 
-export class ContactsForm extends FormView<ContactsFormData> {
+export class ContactsFormView extends FormView<ContactsFormData> {
   private emailInputEl: HTMLInputElement;
   private phoneInputEl: HTMLInputElement;
 

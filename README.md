@@ -337,13 +337,10 @@ yarn build
 Конструктор:
 `constructor(container: HTMLElement)` - принимает ссылку на DOM-элемент контейнера каталога.
 
-Поля класса:
-- `catalogEl: HTMLElement` - контейнер для размещения карточек товаров
-
 Слушатели событий: отсутствуют (класс не содержит пользовательских действий — клики по карточкам обрабатываются в `CardCatalogView`).
 
 Сеттеры:
-- `set catalog(items: HTMLElement[]): void` - принимает массив DOM-элементов карточек и добавляет их в `catalogEl`.
+- `set catalog(items: HTMLElement[]): void` - принимает массив DOM-элементов карточек и добавляет их в `this.container`.
 
 ### Класс ModalView
 
@@ -522,7 +519,7 @@ yarn build
 - `set payment(value: Payment | null): void` - устанавливает активный класс `button_alt-active` на выбранной кнопке оплаты
 - `set address(value: string): void` - устанавливает значение адреса доставки
 
-### Класс ContactsForm
+### Класс ContactsFormView
 
 Класс для отображения и управления формой ввода контактных данных (Email и телефон).
 Наследуется от `FormView<ContactsFormData>`.
@@ -562,7 +559,8 @@ yarn build
 | `basket:delete` | `CardBasketView` | Нажатие кнопки удаления товара из корзины | `{ id: string }` — id товара из `dataset.id` |
 | `basket:open` | `HeaderView` | Клик по иконке корзины в шапке | — |
 | `order:edit` | `BasketView` | Нажатие кнопки «Оформить» в корзине | — |
-| `modal:close` | `ModalView`, `SuccessView` | Клик по кнопке закрытия или по фону модального окна | — |
+| `modal:close` | `ModalView` | Клик по кнопке закрытия или по фону модального окна | — |
+| `success:close` | `SuccessView` | Клик по кнопке Продолжить покупки | — |
 | `form:change` | `FormView`, `OrderFormView` | Любое изменение поля в форме (input) или клик по кнопке оплаты | `{ name: string, value: string }` |
 | `form:submit` | `FormView` | Нажатие кнопки отправки формы (submit) | — |
 
