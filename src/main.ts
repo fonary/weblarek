@@ -303,40 +303,49 @@ events.on("order:changed", () => {
 
 // Обработчик сабмита формы заказа
 events.on("order:submit", () => {
+  const customer = customerModel.getCustomer();
   const errors = customerModel.validate();
-  if (!errors.payment && !errors.address) {
-    modal.content = contactsForm.render();
-  }
+  const hasData = customer.email !== "" || customer.phone !== "";
+
+  modal.content = contactsForm.render({
+    email: customer.email,
+    phone: customer.phone,
+    valid: !errors.email && !errors.phone,
+    error: hasData ? { email: errors.email, phone: errors.phone } : {},
+  });
+  modal.render({hidden: false});
 });
 
-// Обработчик сабмита формы контактов
+/**
+ * Сабмит формы контактов.
+ * Проверка валидации не нужна: кнопка disabled при ошибках.
+ * Только отправляет заказ на сервер.
+ * @event "contacts:submit"
+ */
 events.on("contacts:submit", async () => {
-  const errors = customerModel.validate();
-  if (!errors.email && !errors.phone) {
-    try {
-      const order = await clientApi.placeOrder({
-        payment: customerModel.getCustomer().payment!,
-        address: customerModel.getCustomer().address,
-        email: customerModel.getCustomer().email,
-        phone: customerModel.getCustomer().phone,
-        total: cartModel.getTotalAmount(),
-        items: cartModel.getProducts().map((p) => p.id),
-      });
+  const customer = customerModel.getCustomer();
+  try {
+    const order = await clientApi.placeOrder({
+      payment: customer.payment!,
+      address: customer.address,
+      email: customer.email,
+      phone: customer.phone,
+      total: cartModel.getTotalAmount(),
+      items: cartModel.getProducts().map((p) => p.id),
+    });
 
-      successView.render({ amount: order.total });
-      modal.content = successView.render();
-      cartModel.deleteAll();
-      customerModel.clear(); // order:changed очистит формы автоматически
-    } catch (err) {
-      contactsForm.render({
-        email: customerModel.getCustomer().email,
-        phone: customerModel.getCustomer().phone,
-        valid: false,
-        error: { email: "Ошибка отправки заказа", phone: "" },
-      });
-    }
+    successView.render({ amount: order.total });
+    modal.content = successView.render();
+    cartModel.deleteAll();
+    customerModel.clear();
+  } catch (err) {
+    contactsForm.render({
+      email: customer.email,
+      phone: customer.phone,
+      valid: false,
+      error: { email: "Ошибка отправки заказа", phone: "" },
+    });
   }
-  // Если есть ошибки валидации, order:changed уже перерисовал форму
 });
 
 /**

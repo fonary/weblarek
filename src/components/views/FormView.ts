@@ -58,6 +58,10 @@ export class FormView<T> extends Component<T> {
 export class OrderFormView extends FormView<OrderFormData> {
   private addressInputEl: HTMLInputElement;
   private paymentButtons: HTMLButtonElement[];
+  private paymentMap: Record<string, Payment> = {
+      card: "online",
+      cash: "cash",
+    };
 
   constructor(container: HTMLFormElement, events: IEvents) {
     super(container, events, "order:submit");
@@ -71,15 +75,10 @@ export class OrderFormView extends FormView<OrderFormData> {
       this.container,
     );
 
-    const paymentMap: Record<string, Payment> = {
-      card: "online",
-      cash: "cash",
-    };
-
     this.paymentButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         this.events.emit("payment:change", {
-          value: paymentMap[btn.name],
+          value: this.paymentMap[btn.name],
         });
       });
     });
@@ -87,7 +86,7 @@ export class OrderFormView extends FormView<OrderFormData> {
 
   set payment(value: Payment | null) {
     this.paymentButtons.forEach((btn) => {
-      btn.classList.toggle("button_alt-active", btn.name === value);
+      btn.classList.toggle("button_alt-active", this.paymentMap[btn.name] === value);
     });
   }
 
