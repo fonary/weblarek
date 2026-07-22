@@ -152,8 +152,8 @@ yarn build
 `constructor(events: IEvents)` - принимает брокер событий для уведомления об изменении данных.
 
 Поля:
-- `private _products: Product[]` - Массив товаров для каталога
-- `private _selectedProduct: Product | null` - Текущий выбранный товар
+- `private productsList: Product[]` - Массив товаров для каталога
+- `private chosenProduct: Product | null` - Текущий выбранный товар
 
 Методы:
 - `set products(products: Product[])` - Сохранить список товаров. **Эмитит событие `items:changed`.**
@@ -189,10 +189,10 @@ yarn build
 `constructor(events: IEvents)` - принимает брокер событий для уведомления об изменении данных заказа.
 
 Поля:
-- `private _payment: Payment | null` - Способ оплаты
-- `private _address: string` - Адрес доставки
-- `private _email: string` - Электронная почта
-- `private _phone: string` - Номер телефона
+- `private paymentType: Payment | null` - Способ оплаты
+- `private addressDelivery: string` - Адрес доставки
+- `private emailCustomer: string` - Электронная почта
+- `private phoneCustomer: string` - Номер телефона
 
 Методы:
 - `set payment(payment: Payment | null)` - Устанавливает способ оплаты. **Эмитит событие `order:changed`.**

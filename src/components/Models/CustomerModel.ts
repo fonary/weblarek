@@ -2,66 +2,66 @@ import { Customer, CustomerErrors, Payment } from "../../types/index";
 import { IEvents } from "../base/Events";
 
 export class CustomerModel {
-  #payment: Payment | null = null;
-  #address: string = "";
-  #email: string = "";
-  #phone: string = "";
+  private paymentType: Payment | null = null;
+  private addressDelivery: string = "";
+  private emailCustomer: string = "";
+  private phoneCustomer: string = "";
 
   constructor(protected events: IEvents) {}
 
   set payment(payment: Payment | null) {
-    this.#payment = payment;
+    this.paymentType = payment;
     this.events.emit("order:changed");
   }
 
   set address(address: string) {
-    this.#address = address;
+    this.addressDelivery = address;
     this.events.emit("order:changed");
   }
 
   set email(email: string) {
-    this.#email = email;
+    this.emailCustomer = email;
     this.events.emit("order:changed");
   }
 
   set phone(phone: string) {
-    this.#phone = phone;
+    this.phoneCustomer = phone;
     this.events.emit("order:changed");
   }
 
   getCustomer(): Customer {
     return {
-      payment: this.#payment,
-      address: this.#address,
-      email: this.#email,
-      phone: this.#phone,
+      payment: this.paymentType,
+      address: this.addressDelivery,
+      email: this.emailCustomer,
+      phone: this.phoneCustomer,
     };
   }
 
   clear(): void {
-    this.#payment = null;
-    this.#address = "";
-    this.#email = "";
-    this.#phone = "";
+    this.paymentType = null;
+    this.addressDelivery = "";
+    this.emailCustomer = "";
+    this.phoneCustomer = "";
     this.events.emit("order:changed");
   }
 
   validate(): CustomerErrors {
     const errors: CustomerErrors = {};
 
-    if (this.#payment === null) {
+    if (this.paymentType === null) {
       errors.payment = "Не выбран вид оплаты";
     }
 
-    if (!this.#address.trim()) {
+    if (!this.addressDelivery.trim()) {
       errors.address = "Укажите адрес";
     }
 
-    if (!this.#email.trim()) {
+    if (!this.emailCustomer.trim()) {
       errors.email = "Укажите электронную почту";
     }
 
-    if (!this.#phone.trim()) {
+    if (!this.phoneCustomer.trim()) {
       errors.phone = "Укажите телефон";
     }
 
