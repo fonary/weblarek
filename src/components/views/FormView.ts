@@ -5,7 +5,7 @@ import { IEvents } from "../base/Events";
 
 type FormState = {
   valid: boolean;
-  error?: CustomerErrors;
+  error?: string;
 };
 type OrderFormData = Pick<Customer, "payment" | "address"> & FormState;
 type ContactsFormData = Pick<Customer, "email" | "phone"> & FormState;
@@ -17,7 +17,6 @@ abstract class FormView<T> extends Component<T> {
   constructor(
     container: HTMLFormElement,
     protected events: IEvents,
-    protected submitEventName: string = "form:submit",
   ) {
     super(container);
 
@@ -26,10 +25,11 @@ abstract class FormView<T> extends Component<T> {
       this.container,
     );
     this.errorsEl = ensureElement<HTMLElement>(".form__errors", this.container);
+    const formName = this.container.getAttribute("name");
 
     this.container.addEventListener("input", (e: Event) => {
       const target = e.target as HTMLInputElement;
-      this.events.emit("form:change", {
+      this.events.emit(`${formName}:change`, {
         name: target.name,
         value: target.value,
       });
@@ -37,7 +37,7 @@ abstract class FormView<T> extends Component<T> {
 
     this.container.addEventListener("submit", (e: Event) => {
       e.preventDefault();
-      this.events.emit(this.submitEventName);
+      this.events.emit(`${formName}:submit`);
     });
   }
 
@@ -45,13 +45,8 @@ abstract class FormView<T> extends Component<T> {
     this.submitButton.disabled = !value;
   }
 
-  set error(value: CustomerErrors) {
-    if (value) {
-      const errorsText = Object.values(value).join(" ");
-      this.errorsEl.textContent = errorsText;
-    } else {
-      this.errorsEl.textContent = "";
-    }
+  set error(value: string) {
+    this.errorsEl.textContent = value;
   }
 }
 
@@ -59,12 +54,12 @@ export class OrderFormView extends FormView<OrderFormData> {
   private addressInputEl: HTMLInputElement;
   private paymentButtons: HTMLButtonElement[];
   private paymentMap: Record<string, Payment> = {
-      card: "online",
-      cash: "cash",
-    };
+    card: "online",
+    cash: "cash",
+  };
 
   constructor(container: HTMLFormElement, events: IEvents) {
-    super(container, events, "order:submit");
+    super(container, events);
 
     this.addressInputEl = ensureElement<HTMLInputElement>(
       "input[name=address]",
@@ -77,7 +72,9 @@ export class OrderFormView extends FormView<OrderFormData> {
 
     this.paymentButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
-        this.events.emit("payment:change", {
+        const formName = this.container.getAttribute("name");
+        this.events.emit(`${formName}:change`, {
+          name: "payment",
           value: this.paymentMap[btn.name],
         });
       });
@@ -86,7 +83,10 @@ export class OrderFormView extends FormView<OrderFormData> {
 
   set payment(value: Payment | null) {
     this.paymentButtons.forEach((btn) => {
-      btn.classList.toggle("button_alt-active", this.paymentMap[btn.name] === value);
+      btn.classList.toggle(
+        "button_alt-active",
+        this.paymentMap[btn.name] === value,
+      );
     });
   }
 
@@ -100,7 +100,7 @@ export class ContactsFormView extends FormView<ContactsFormData> {
   private phoneInputEl: HTMLInputElement;
 
   constructor(container: HTMLFormElement, events: IEvents) {
-    super(container, events, "contacts:submit");
+    super(container, events);
 
     this.emailInputEl = ensureElement<HTMLInputElement>(
       "input[name=email]",

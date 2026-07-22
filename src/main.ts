@@ -220,6 +220,11 @@ events.on("basket:open", () => {
   modal.render({ content: basket.render(), hidden: false });
 });
 
+
+const formatErrors = (errorsObj: Record<string, string | undefined>) => {
+  return Object.values(errorsObj).filter(Boolean).join(" ");
+};
+
 /**
  * Обработчик перехода к оформлению заказа.
  * Рендерит первую форму (адрес и оплата).
@@ -236,19 +241,14 @@ events.on("order:edit", () => {
       address: customer.address,
       valid: !errors.payment && !errors.address,
       error: hasData
-        ? { payment: errors.payment, address: errors.address }
-        : {},
+        ? formatErrors({ payment: errors.payment, address: errors.address })
+        : "",
     }),
     hidden: false,
   });
 });
 
-/**
- * Обработчик изменения текстовых полей формы (address, email, phone).
- * Только сохраняет значение в модель — рендеринг выполнит order:changed.
- * @event "form:change"
- */
-events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
+const handleFormChange = ({ name, value }: { name: string; value: string }) => {
   switch (name) {
     case "address":
       customerModel.address = value;
@@ -259,18 +259,17 @@ events.on<{ name: string; value: string }>("form:change", ({ name, value }) => {
     case "phone":
       customerModel.phone = value;
       break;
+    case "payment":
+      customerModel.payment = value as Payment;
+      break;
     default:
       return;
   }
-});
-/**
- * Обработчик выбора способа оплаты.
- * Только сохраняет значение в модель — рендеринг выполнит order:changed.
- * @event "payment:change"
- */
-events.on<{ value: Payment }>("payment:change", ({ value }) => {
-  customerModel.payment = value;
-});
+};
+
+
+events.on("order:change", handleFormChange);
+events.on("contacts:change", handleFormChange);
 
 /**
  * Обработчик изменения данных покупателя.
@@ -285,14 +284,14 @@ events.on("order:changed", () => {
     payment: customer.payment,
     address: customer.address,
     valid: !errors.payment && !errors.address,
-    error: { payment: errors.payment, address: errors.address },
+    error: formatErrors({ payment: errors.payment, address: errors.address }),
   });
 
   contactsForm.render({
     email: customer.email,
     phone: customer.phone,
     valid: !errors.email && !errors.phone,
-    error: { email: errors.email, phone: errors.phone },
+    error: formatErrors({ email: errors.email, phone: errors.phone }),
   });
 });
 
@@ -307,7 +306,7 @@ events.on("order:submit", () => {
       email: customer.email,
       phone: customer.phone,
       valid: !errors.email && !errors.phone,
-      error: hasData ? { email: errors.email, phone: errors.phone } : {},
+      error: hasData ? formatErrors({ email: errors.email, phone: errors.phone }) : "",
     }),
     hidden: false,
   });
@@ -337,7 +336,7 @@ events.on("contacts:submit", async () => {
       email: customer.email,
       phone: customer.phone,
       valid: false,
-      error: { email: "Ошибка отправки заказа", phone: "" },
+      error: "Ошибка отправки заказа"
     });
   }
 });
