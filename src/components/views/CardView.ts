@@ -23,7 +23,7 @@ abstract class CardView<T> extends Component<T> {
 
   constructor(
     container: HTMLElement,
-    protected events?: IEvents,
+    protected events: IEvents,
   ) {
     super(container);
     this.titleEl = ensureElement<HTMLElement>(".card__title", this.container);
@@ -31,7 +31,7 @@ abstract class CardView<T> extends Component<T> {
   }
 
   set price(value: number | null) {
-    if (value) {
+    if (value !== null) {
       this.priceEl.textContent = `${value} синапсов`;
     } else {
       this.priceEl.textContent = "Бесценно";
@@ -47,16 +47,14 @@ abstract class CardView<T> extends Component<T> {
   }
 }
 
-export class CardCatalogView<
-  T extends CardCatalogData | CardPreviewData,
-> extends CardView<T> {
+export class CardCatalogView extends CardView<CardCatalogData> {
   protected categoryEl: HTMLElement;
   protected cardImage: HTMLImageElement;
   protected cardButton: HTMLButtonElement;
 
   constructor(
     container: HTMLElement,
-    protected events?: IEvents,
+    events: IEvents,
   ) {
     super(container, events);
 
@@ -71,7 +69,7 @@ export class CardCatalogView<
     this.cardButton = this.container as HTMLButtonElement;
 
     this.cardButton.addEventListener("click", () => {
-      this.events?.emit("card:select", { id: this.container.dataset.id });
+      this.events.emit("card:select", { id: this.container.dataset.id });
     });
   }
 
@@ -91,13 +89,13 @@ export class CardCatalogView<
   }
 }
 
-export class CardPreview extends CardCatalogView<CardPreviewData> {
+export class CardPreview extends CardView<CardPreviewData> {
   private descriptionEl: HTMLElement;
   protected cardButton: HTMLButtonElement;
 
   constructor(
     container: HTMLElement,
-    protected events?: IEvents,
+    events: IEvents,
   ) {
     super(container, events);
     this.descriptionEl = ensureElement<HTMLElement>(
@@ -110,9 +108,8 @@ export class CardPreview extends CardCatalogView<CardPreviewData> {
       this.container,
     );
 
-    this.cardButton.addEventListener("click", (e: Event) => {
-      e.stopPropagation();
-      this.events?.emit("card:order");
+    this.cardButton.addEventListener("click", () => {
+      this.events.emit("card:order");
     });
   }
 
@@ -135,7 +132,7 @@ export class CardBasketView extends CardView<CardBasketData> {
 
   constructor(
     container: HTMLElement,
-    protected events?: IEvents,
+    events: IEvents,
   ) {
     super(container, events);
     this.indexEl = ensureElement<HTMLElement>(
@@ -148,7 +145,7 @@ export class CardBasketView extends CardView<CardBasketData> {
     );
 
     this.cardButton.addEventListener("click", () => {
-      this.events?.emit("basket:delete", { id: this.container.dataset.id });
+      this.events.emit("basket:delete", { id: this.container.dataset.id });
     });
   }
 
