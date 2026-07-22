@@ -12,7 +12,7 @@ import { CartModel } from "./components/Models/CartModel";
 import { CustomerModel } from "./components/Models/CustomerModel";
 
 // Типы данных и API
-import { Payment, Product, ProductsResponse } from "./types";
+import { Payment, ProductsResponse } from "./types";
 import { Api } from "./components/base/Api";
 import { ClientApi } from "./components/communication/ClientApi";
 
@@ -87,7 +87,7 @@ const header = new HeaderView(ensureElement<HTMLElement>(".header"), events);
  * Отображает список карточек товаров.
  * @type {GalleryView}
  */
-const gallery = new GalleryView(ensureElement<HTMLElement>(".page__wrapper"));
+const gallery = new GalleryView(ensureElement<HTMLElement>(".gallery"));
 
 /**
  * Представление превью товара в модальном окне.
