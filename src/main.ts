@@ -152,9 +152,10 @@ events.on("items:changed", () => {
   const products = catalogModel.products;
   const cardList: HTMLElement[] = products.map((product) => {
     const cardContainer = cloneTemplate<HTMLElement>("#card-catalog");
-    const card = new CardCatalogView(cardContainer, events);
+    const card = new CardCatalogView(cardContainer, () => {
+      events.emit("card:select", { id: product.id });
+    });
     card.render({
-      id: product.id,
       title: product.title,
       price: product.price,
       category: product.category,
@@ -199,7 +200,6 @@ events.on("preview:changed", () => {
 
   modal.render({
     content: cardPreview.render({
-      id: product.id,
       title: product.title,
       price: product.price,
       category: product.category,
@@ -371,9 +371,10 @@ events.on("basket:changed", () => {
 
   const purchases: HTMLElement[] = products.map((product, index) => {
     const cardContainer = cloneTemplate<HTMLElement>("#card-basket");
-    const card = new CardBasketView(cardContainer, events);
+    const card = new CardBasketView(cardContainer, () => {
+      events.emit("basket:delete", { id: product.id });
+    });
     card.render({
-      id: product.id,
       title: product.title,
       price: product.price,
       index: index + 1,

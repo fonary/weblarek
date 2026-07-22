@@ -6,13 +6,13 @@ import { IEvents } from "../base/Events";
 
 type CardCatalogData = Pick<
   Product,
-  "id" | "title" | "price" | "category" | "image"
+  "title" | "price" | "category" | "image"
 >;
-type CardPreviewData = Product & {
+type CardPreviewData = Omit<Product, "id"> & {
   buttonText: string;
   buttonDisabled: boolean;
 };
-type CardBasketData = Pick<Product, "id" | "title" | "price"> & {
+type CardBasketData = Pick<Product, "title" | "price"> & {
   index: number;
 };
 
@@ -23,7 +23,6 @@ abstract class CardView<T> extends Component<T> {
 
   constructor(
     container: HTMLElement,
-    protected events: IEvents,
   ) {
     super(container);
     this.titleEl = ensureElement<HTMLElement>(".card__title", this.container);
@@ -41,10 +40,6 @@ abstract class CardView<T> extends Component<T> {
   set title(title: string) {
     this.titleEl.textContent = title;
   }
-
-  set id(value: string) {
-    this.container.dataset.id = value;
-  }
 }
 
 export class CardCatalogView extends CardView<CardCatalogData> {
@@ -54,9 +49,10 @@ export class CardCatalogView extends CardView<CardCatalogData> {
 
   constructor(
     container: HTMLElement,
-    events: IEvents,
+    private onClick: () => void,
+
   ) {
-    super(container, events);
+    super(container);
 
     this.categoryEl = ensureElement<HTMLElement>(
       ".card__category",
@@ -69,7 +65,7 @@ export class CardCatalogView extends CardView<CardCatalogData> {
     this.cardButton = this.container as HTMLButtonElement;
 
     this.cardButton.addEventListener("click", () => {
-      this.events.emit("card:select", { id: this.container.dataset.id });
+      this.onClick();
     });
   }
 
@@ -95,9 +91,9 @@ export class CardPreview extends CardView<CardPreviewData> {
 
   constructor(
     container: HTMLElement,
-    events: IEvents,
+    protected events: IEvents,
   ) {
-    super(container, events);
+    super(container);
     this.descriptionEl = ensureElement<HTMLElement>(
       ".card__text",
       this.container,
@@ -132,9 +128,9 @@ export class CardBasketView extends CardView<CardBasketData> {
 
   constructor(
     container: HTMLElement,
-    events: IEvents,
+    private onClick: () => void,
   ) {
-    super(container, events);
+    super(container);
     this.indexEl = ensureElement<HTMLElement>(
       ".basket__item-index",
       this.container,
@@ -145,7 +141,7 @@ export class CardBasketView extends CardView<CardBasketData> {
     );
 
     this.cardButton.addEventListener("click", () => {
-      this.events.emit("basket:delete", { id: this.container.dataset.id });
+      this.onClick();
     });
   }
 
