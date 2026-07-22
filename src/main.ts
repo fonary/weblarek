@@ -217,7 +217,7 @@ events.on("preview:changed", () => {
  * @event "basket:open"
  */
 events.on("basket:open", () => {
-  modal.render({content: basket.render(), hidden: false });
+  modal.render({ content: basket.render(), hidden: false });
 });
 
 /**
@@ -230,12 +230,17 @@ events.on("order:edit", () => {
   const errors = customerModel.validate();
   const hasData = customer.payment !== null || customer.address !== "";
 
-  modal.render({content:  orderForm.render({
-    payment: customer.payment,
-    address: customer.address,
-    valid: !errors.payment && !errors.address,
-    error: hasData ? { payment: errors.payment, address: errors.address } : {},
-  }), hidden: false });
+  modal.render({
+    content: orderForm.render({
+      payment: customer.payment,
+      address: customer.address,
+      valid: !errors.payment && !errors.address,
+      error: hasData
+        ? { payment: errors.payment, address: errors.address }
+        : {},
+    }),
+    hidden: false,
+  });
 });
 
 /**
@@ -297,12 +302,15 @@ events.on("order:submit", () => {
   const errors = customerModel.validate();
   const hasData = customer.email !== "" || customer.phone !== "";
 
-  modal.render({content: contactsForm.render({
-    email: customer.email,
-    phone: customer.phone,
-    valid: !errors.email && !errors.phone,
-    error: hasData ? { email: errors.email, phone: errors.phone } : {},
-  }), hidden: false});
+  modal.render({
+    content: contactsForm.render({
+      email: customer.email,
+      phone: customer.phone,
+      valid: !errors.email && !errors.phone,
+      error: hasData ? { email: errors.email, phone: errors.phone } : {},
+    }),
+    hidden: false,
+  });
 });
 
 /**
@@ -323,9 +331,7 @@ events.on("contacts:submit", async () => {
       items: cartModel.getProducts().map((p) => p.id),
     });
 
-    modal.render({content: successView.render({ amount: order.total })});
-    cartModel.deleteAll();
-    customerModel.clear();
+    modal.render({ content: successView.render({ amount: order.total }) });
   } catch (err) {
     contactsForm.render({
       email: customer.email,
@@ -361,7 +367,7 @@ events.on("card:order", () => {
  */
 events.on("basket:changed", () => {
   const products = cartModel.getProducts();
-  
+
   header.render({ counter: cartModel.getProductCount() });
 
   const purchases: HTMLElement[] = products.map((product, index) => {
@@ -400,6 +406,12 @@ events.on<{ id: string }>("basket:delete", ({ id }) => {
  */
 events.on("modal:close", () => {
   modal.render({ hidden: true });
+});
+
+events.on("success:close", () => {
+  modal.render({ hidden: true });
+  cartModel.deleteAll();
+  customerModel.clear();
 });
 
 // === Инициализация приложения ===

@@ -22,7 +22,7 @@ export class SuccessView extends Component<SuccessViewData> {
     this.debitEl = ensureElement(".order-success__description", this.container);
 
     this.closeButton.addEventListener("click", () => {
-      this.events.emit("modal:close");
+      this.events.emit("success:close");
     });
   }
 
