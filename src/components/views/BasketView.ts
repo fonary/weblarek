@@ -5,6 +5,7 @@ import { IEvents } from "../base/Events";
 interface BasketViewData {
   purchases: HTMLElement[];
   totalCost: number;
+  valid: boolean;
 }
 
 export class BasketView extends Component<BasketViewData> {

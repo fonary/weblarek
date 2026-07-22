@@ -384,9 +384,8 @@ events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
   basket.render({
     purchases,
     totalCost: cartModel.getTotalAmount(),
+    valid: products.length > 0,
   });
-
-  basket.valid = products.length > 0;
 });
 
 /**

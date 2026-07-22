@@ -11,22 +11,22 @@ export class CustomerModel {
 
   set payment(payment: Payment | null) {
     this.#payment = payment;
-    this.events.emit("order:changed", this.validate());
+    this.events.emit("order:changed");
   }
 
   set address(address: string) {
     this.#address = address;
-    this.events.emit("order:changed", this.validate());
+    this.events.emit("order:changed");
   }
 
   set email(email: string) {
     this.#email = email;
-    this.events.emit("order:changed", this.validate());
+    this.events.emit("order:changed");
   }
 
   set phone(phone: string) {
     this.#phone = phone;
-    this.events.emit("order:changed", this.validate());
+    this.events.emit("order:changed");
   }
 
   getCustomer(): Customer {
@@ -43,7 +43,7 @@ export class CustomerModel {
     this.#address = "";
     this.#email = "";
     this.#phone = "";
-    this.events.emit("order:changed", this.validate());
+    this.events.emit("order:changed");
   }
 
   validate(): CustomerErrors {
