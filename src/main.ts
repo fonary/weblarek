@@ -147,15 +147,12 @@ const successView = new SuccessView(
  * Обработчик изменения каталога товаров.
  * При обновлении списка товаров перерисовывает галерею карточек.
  * @event "items:changed"
- * @param {Object} data - объект с новыми товарами.
- * @param {Product[]} data.products - массив товаров для отображения.
  */
-events.on<{ products: Product[] }>("items:changed", ({ products }) => {
+events.on("items:changed", () => {
+  const products = catalogModel.products;
   const cardList: HTMLElement[] = products.map((product) => {
     const cardContainer = cloneTemplate<HTMLElement>("#card-catalog");
     const card = new CardCatalogView(cardContainer, events);
-
-    // Рендер карточки с данными (включая id для dataset)
     card.render({
       id: product.id,
       title: product.title,
@@ -163,10 +160,8 @@ events.on<{ products: Product[] }>("items:changed", ({ products }) => {
       category: product.category,
       image: CDN_URL + product.image,
     });
-
     return cardContainer;
   });
-
   gallery.render({ catalog: cardList });
 });
 
@@ -174,8 +169,6 @@ events.on<{ products: Product[] }>("items:changed", ({ products }) => {
  * Обработчик выбора товара в каталоге.
  * Обновляет выбранный товар в модели.
  * @event "card:select"
- * @param {Object} data - данные карточки.
- * @param {string} data.id - идентификатор выбранного товара.
  */
 events.on<{ id: string }>("card:select", ({ id }) => {
   catalogModel.selectedProduct = id;
@@ -185,10 +178,10 @@ events.on<{ id: string }>("card:select", ({ id }) => {
  * Обработчик обновления выбранного товара для превью.
  * Рендерит детальную карточку товара и управляет состоянием кнопки.
  * @event "preview:changed"
- * @param {Object} data - объект с данными товара.
- * @param {Product} data.product - выбранный товар.
  */
-events.on<{ product: Product }>("preview:changed", ({ product }) => {
+events.on("preview:changed", () => {
+  const product = catalogModel.selectedProduct;
+  if (!product) return;
 
   let buttonText: string;
   let buttonDisabled: boolean;
@@ -204,17 +197,19 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
     buttonDisabled = false;
   }
 
-  // Один вызов render — все данные, включая состояние кнопки
-  modal.render({content: cardPreview.render({
-    id: product.id,
-    title: product.title,
-    price: product.price,
-    category: product.category,
-    image: CDN_URL + product.image,
-    description: product.description,
-    buttonText,
-    buttonDisabled,
-  }), hidden: false});
+  modal.render({
+    content: cardPreview.render({
+      id: product.id,
+      title: product.title,
+      price: product.price,
+      category: product.category,
+      image: CDN_URL + product.image,
+      description: product.description,
+      buttonText,
+      buttonDisabled,
+    }),
+    hidden: false,
+  });
 });
 
 /**
@@ -363,10 +358,10 @@ events.on("card:order", () => {
  * Обработчик изменения содержимого корзины.
  * Обновляет интерфейс корзины и шапки.
  * @event "basket:changed"
- * @param {Object} data - объект с обновлённым списком товаров.
- * @param {Product[]} data.products - список товаров в корзине.
  */
-events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
+events.on("basket:changed", () => {
+  const products = cartModel.getProducts();
+  
   header.render({ counter: cartModel.getProductCount() });
 
   const purchases: HTMLElement[] = products.map((product, index) => {
@@ -391,8 +386,6 @@ events.on<{ products: Product[] }>("basket:changed", ({ products }) => {
 /**
  * Обработчик удаления товара из корзины.
  * @event "basket:delete"
- * @param {Object} data - идентификатор удаляемого товара.
- * @param {string} data.id - ID товара.
  */
 events.on<{ id: string }>("basket:delete", ({ id }) => {
   const product = catalogModel.getProductById(id);

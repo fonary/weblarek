@@ -11,7 +11,7 @@ export class CatalogModel {
 
   set products(products: Product[]) {
     this.#products = [...products];
-    this.events.emit("items:changed", { products: this.#products });
+    this.events.emit("items:changed");
   }
 
   get products(): Product[] {
@@ -22,7 +22,7 @@ export class CatalogModel {
     const product = this.getProductById(id);
     if (product) {
       this.#selectedProduct = product;
-      this.events.emit("preview:changed", { product: this.#selectedProduct });
+      this.events.emit("preview:changed");
     }
   }
 
