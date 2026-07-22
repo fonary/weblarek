@@ -23,11 +23,7 @@ import { cloneTemplate, ensureElement } from "./utils/utils";
 // Представления (Views)
 import { HeaderView } from "./components/views/HeaderView";
 import { GalleryView } from "./components/views/GalleryView";
-import {
-  CardBasketView,
-  CardCatalogView,
-  CardPreview,
-} from "./components/views/CardView";
+import { CardCatalogView } from "./components/views/cards/CardCatalogView";
 import { ModalView } from "./components/views/ModalView";
 import { BasketView } from "./components/views/BasketView";
 import { ContactsFormView, OrderFormView } from "./components/views/FormView";
@@ -35,6 +31,9 @@ import { SuccessView } from "./components/views/SuccessView";
 
 // Система событий
 import { EventEmitter } from "./components/base/Events";
+import { CardPreview } from "./components/views/cards/CardPreview";
+import { CardBasketView } from "./components/views/cards/CardBasketView";
+import { apiProducts } from "./utils/data";
 
 /**
  * Экземпляр API-клиента для взаимодействия с сервером.
@@ -220,7 +219,6 @@ events.on("basket:open", () => {
   modal.render({ content: basket.render(), hidden: false });
 });
 
-
 const formatErrors = (errorsObj: Record<string, string | undefined>) => {
   return Object.values(errorsObj).filter(Boolean).join(" ");
 };
@@ -267,7 +265,6 @@ const handleFormChange = ({ name, value }: { name: string; value: string }) => {
   }
 };
 
-
 events.on("order:change", handleFormChange);
 events.on("contacts:change", handleFormChange);
 
@@ -306,7 +303,9 @@ events.on("order:submit", () => {
       email: customer.email,
       phone: customer.phone,
       valid: !errors.email && !errors.phone,
-      error: hasData ? formatErrors({ email: errors.email, phone: errors.phone }) : "",
+      error: hasData
+        ? formatErrors({ email: errors.email, phone: errors.phone })
+        : "",
     }),
     hidden: false,
   });
@@ -336,7 +335,7 @@ events.on("contacts:submit", async () => {
       email: customer.email,
       phone: customer.phone,
       valid: false,
-      error: "Ошибка отправки заказа"
+      error: "Ошибка отправки заказа",
     });
   }
 });
@@ -423,8 +422,9 @@ events.on("success:close", () => {
  */
 async function init(): Promise<void> {
   try {
-    const productsResponse: ProductsResponse = await clientApi.getProducts();
-    catalogModel.products = productsResponse.items;
+    // const productsResponse: ProductsResponse = await clientApi.getProducts();
+    // catalogModel.products = productsResponse.items;
+    catalogModel.products = apiProducts.items
     cartModel.deleteAll();
     customerModel.clear();
   } catch (error) {
