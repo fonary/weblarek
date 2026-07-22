@@ -1,4 +1,4 @@
-import { Customer, CustomerErrors, Payment } from "../../types";
+import { Customer, Payment } from "../../types";
 import { ensureAllElements, ensureElement } from "../../utils/utils";
 import { Component } from "../base/Component";
 import { IEvents } from "../base/Events";

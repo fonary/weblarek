@@ -41,14 +41,10 @@ export class BasketView extends Component<BasketViewData> {
   }
 
   set purchases(purchases: HTMLElement[]) {
-    if (purchases.length === 0) {
-      this.shoppingListEl.replaceChildren();
-    } else {
-      this.shoppingListEl.replaceChildren(...purchases);
-    }
+    this.shoppingListEl.replaceChildren(...purchases);
   }
 
   set totalCost(value: number) {
-    this.totalCostEl.textContent = `${value ?? 0} синапсов`;
+    this.totalCostEl.textContent = `${value} синапсов`;
   }
 }
