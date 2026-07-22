@@ -26,14 +26,14 @@ import { GalleryView } from "./components/views/GalleryView";
 import { CardCatalogView } from "./components/views/cards/CardCatalogView";
 import { ModalView } from "./components/views/ModalView";
 import { BasketView } from "./components/views/BasketView";
-import { ContactsFormView, OrderFormView } from "./components/views/FormView";
+import { OrderFormView } from "./components/views/forms/OrderFormView";
 import { SuccessView } from "./components/views/SuccessView";
 
 // Система событий
 import { EventEmitter } from "./components/base/Events";
 import { CardPreview } from "./components/views/cards/CardPreview";
 import { CardBasketView } from "./components/views/cards/CardBasketView";
-import { apiProducts } from "./utils/data";
+import { ContactsFormView } from "./components/views/forms/ContactsFormView";
 
 /**
  * Экземпляр API-клиента для взаимодействия с сервером.
@@ -422,9 +422,8 @@ events.on("success:close", () => {
  */
 async function init(): Promise<void> {
   try {
-    // const productsResponse: ProductsResponse = await clientApi.getProducts();
-    // catalogModel.products = productsResponse.items;
-    catalogModel.products = apiProducts.items
+    const productsResponse: ProductsResponse = await clientApi.getProducts();
+    catalogModel.products = productsResponse.items;
     cartModel.deleteAll();
     customerModel.clear();
   } catch (error) {
