@@ -189,7 +189,7 @@ events.on<{ id: string }>("card:select", ({ id }) => {
  * @param {Product} data.product - выбранный товар.
  */
 events.on<{ product: Product }>("preview:changed", ({ product }) => {
-  // Вычисляем состояние кнопки
+
   let buttonText: string;
   let buttonDisabled: boolean;
 
@@ -205,7 +205,7 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
   }
 
   // Один вызов render — все данные, включая состояние кнопки
-  cardPreview.render({
+  modal.render({content: cardPreview.render({
     id: product.id,
     title: product.title,
     price: product.price,
@@ -214,10 +214,7 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
     description: product.description,
     buttonText,
     buttonDisabled,
-  });
-
-  modal.content = cardPreview.render();
-  modal.render({ hidden: false });
+  }), hidden: false});
 });
 
 /**
@@ -225,8 +222,7 @@ events.on<{ product: Product }>("preview:changed", ({ product }) => {
  * @event "basket:open"
  */
 events.on("basket:open", () => {
-  modal.content = basket.render();
-  modal.render({ hidden: false });
+  modal.render({content: basket.render(), hidden: false });
 });
 
 /**
@@ -238,14 +234,13 @@ events.on("order:edit", () => {
   const customer = customerModel.getCustomer();
   const errors = customerModel.validate();
   const hasData = customer.payment !== null || customer.address !== "";
-  orderForm.render({
+
+  modal.render({content:  orderForm.render({
     payment: customer.payment,
     address: customer.address,
     valid: !errors.payment && !errors.address,
     error: hasData ? { payment: errors.payment, address: errors.address } : {},
-  });
-  modal.content = orderForm.render();
-  modal.render({ hidden: false });
+  }), hidden: false });
 });
 
 /**
@@ -307,13 +302,12 @@ events.on("order:submit", () => {
   const errors = customerModel.validate();
   const hasData = customer.email !== "" || customer.phone !== "";
 
-  modal.content = contactsForm.render({
+  modal.render({content: contactsForm.render({
     email: customer.email,
     phone: customer.phone,
     valid: !errors.email && !errors.phone,
     error: hasData ? { email: errors.email, phone: errors.phone } : {},
-  });
-  modal.render({hidden: false});
+  }), hidden: false});
 });
 
 /**
@@ -334,8 +328,7 @@ events.on("contacts:submit", async () => {
       items: cartModel.getProducts().map((p) => p.id),
     });
 
-    successView.render({ amount: order.total });
-    modal.content = successView.render();
+    modal.render({content: successView.render({ amount: order.total })});
     cartModel.deleteAll();
     customerModel.clear();
   } catch (err) {
