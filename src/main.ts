@@ -330,6 +330,8 @@ events.on("contacts:submit", async () => {
     });
 
     modal.render({ content: successView.render({ amount: order.total }) });
+    cartModel.deleteAll();
+    customerModel.clear();
   } catch (err) {
     contactsForm.render({
       email: customer.email,
@@ -409,8 +411,6 @@ events.on("modal:close", () => {
 
 events.on("success:close", () => {
   modal.render({ hidden: true });
-  cartModel.deleteAll();
-  customerModel.clear();
 });
 
 // === Инициализация приложения ===
