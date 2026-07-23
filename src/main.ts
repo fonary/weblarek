@@ -421,11 +421,11 @@ events.on("success:close", () => {
  * @returns {Promise<void>}
  */
 async function init(): Promise<void> {
+  cartModel.deleteAll();
+  customerModel.clear();
   try {
     const productsResponse: ProductsResponse = await clientApi.getProducts();
     catalogModel.products = productsResponse.items;
-    cartModel.deleteAll();
-    customerModel.clear();
   } catch (error) {
     console.error(
       "Не удалось загрузить данные с сервера из-за ошибки: ",
